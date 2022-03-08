@@ -1,17 +1,21 @@
 {
-  "name": "main",
+  "name": "react-vite-todomvc",
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite --port 3030 --clearScreen false",
+    "dev": "vite --host 0.0.0.0 --clearScreen false",
     "build": "vite build",
+    "serve": "vite preview",
     "lint": "TIMING=1 eslint src/**/*.tsx --fix && tsc --noEmit",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "dependencies": {
+    "@pure-model/core": "^1.2.13",
+    "headless": "workspace:*",
+    "immer": "^9.0.12",
+    "@pure-model-combine/core": "workspace:*",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "some-component": "workspace:*"
+    "react-dom": "^17.0.2"
   },
   "devDependencies": {
     "@types/react": "^17.0.0",
@@ -19,7 +23,7 @@
     "@vitejs/plugin-react": "^1.2.0",
     "scripts": "workspace:*",
     "tsconfig": "workspace:*",
-    "typescript": "^4.5.3",
-    "vite": "^2.6.14"
+    "typescript": "^4.6.2",
+    "vite": "^2.8.1"
   }
 }

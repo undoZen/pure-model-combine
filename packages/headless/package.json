@@ -1,0 +1,36 @@
+{
+    "name": "headless",
+    "version": "0.0.0",
+    "private": true,
+    "main": "dist/index.cjs.js",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "sideEffects": false,
+    "scripts": {
+        "build": "tsup src/index.tsx --format esm,cjs --dts --external react",
+        "dev": "tsup src/index.tsx --format esm,cjs --watch --dts --external react",
+        "lint": "TIMING=1 eslint src --fix",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    },
+    "files": [
+        "dist"
+    ],
+    "dependencies": {
+        "@pure-model-combine/core": "workspace:*",
+        "@pure-model/core": "^1.2.13",
+        "fast-equals": "^3.0.0",
+        "immer": "^9.0.12",
+        "lodash.mapvalues": "^4.6.0",
+        "react": "^17.0.2"
+    },
+    "devDependencies": {
+        "@tsconfig/vite-react": "^1.0.0",
+        "@types/lodash.mapvalues": "^4.6.6",
+        "@types/react": "^17.0.39",
+        "eslint": "^7.32.0",
+        "scripts": "workspace:*",
+        "tsconfig": "workspace:*",
+        "tsup": "^5.10.1",
+        "typescript": "^4.6.2"
+    }
+}
