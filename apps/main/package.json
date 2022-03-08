@@ -1,0 +1,25 @@
+{
+  "name": "main",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite --port 3030 --clearScreen false",
+    "build": "vite build",
+    "lint": "TIMING=1 eslint src/**/*.tsx --fix && tsc --noEmit",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "some-component": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "@vitejs/plugin-react": "^1.2.0",
+    "scripts": "workspace:*",
+    "tsconfig": "workspace:*",
+    "typescript": "^4.5.3",
+    "vite": "^2.6.14"
+  }
+}
