@@ -19,7 +19,7 @@ export default function TodosInitializer() {
             addTodo: produce((draft: Draft<Todos>, content: string) => {
                 draft.push({
                     id: Date.now(),
-                    content:content+Math.random(),
+                    content,
                     completed: false,
                 })
             }),

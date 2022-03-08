@@ -92,7 +92,7 @@ export function useModelStates<SS extends ModelRecord>(
     subsRef.current = {
       getCurrentValue: () => getStateFromModels(models),
       subscribe: (callback: (states: States<SS>) => void) => {
-        console.log('subscribe objk 1111', Object.keys(models))
+        console.log('subscribe objk ', Object.keys(models))
         const subscriptions = Object.keys(models).map((key: keyof SS) => {
           console.log('subscribed', models, key)
           return models[key].store.subscribe(() => {
@@ -221,14 +221,6 @@ const getToProvider = (globalModels: Initializer[], GlobalModelsContext: any) =>
       })
       console.log('models', models)
       const actions = useMemo(() => getActions(models, props), [rnp])
-      useIsomorphicLayoutEffect(() => {
-        return
-        console.log('cacheRef.current', cacheRef.current)
-        if (cacheRef.current.length) {
-          setDeps(cacheRef.current)
-          cacheRef.current = []
-        }
-      })
       return <ModelsProvider models={models} selectors={selectors} actions={actions} {...props}>{children}</ModelsProvider>
     }
 

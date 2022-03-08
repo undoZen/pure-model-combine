@@ -1,4 +1,4 @@
-import { adaptReact, addActions, addSelectors, createModels } from '@pure-model-combine/puremodels';
+import { adaptReact, addActions, addSelectors, createModels } from '@pure-model-combine/core';
 import EditInitializer from './edit';
 import TodoFilter from './filter';
 import HeaderInitializer from "./header";

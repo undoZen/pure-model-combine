@@ -10,10 +10,10 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "dependencies": {
+    "@pure-model-combine/core": "workspace:*",
     "@pure-model/core": "^1.2.13",
     "headless": "workspace:*",
     "immer": "^9.0.12",
-    "@pure-model-combine/core": "workspace:*",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
@@ -21,7 +21,10 @@
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@vitejs/plugin-react": "^1.2.0",
+    "autoprefixer": "^10.4.2",
+    "postcss": "^8.4.8",
     "scripts": "workspace:*",
+    "tailwindcss": "^3.0.23",
     "tsconfig": "workspace:*",
     "typescript": "^4.6.2",
     "vite": "^2.8.1"
