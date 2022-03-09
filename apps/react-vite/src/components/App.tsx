@@ -1,23 +1,21 @@
 import '../../styles/App.css'
-import { GlobalModelsProvider, TodosProvider } from 'headless'
+import { TodosProvider } from 'headless'
 import { Todos } from './todos'
 
-function App () {
+function App() {
   return (
-    <GlobalModelsProvider>
-      <div className='app w-11/12 md:w-8/12 lg:w-6/12 mx-auto max-w-prose text-center mt-[-7px]'>
-        <p className='app__title font-thin text-[100px]'>todos</p>
+    <div className='app w-11/12 md:w-8/12 lg:w-6/12 mx-auto max-w-prose text-center mt-[-7px]'>
+      <p className='app__title font-thin text-[100px]'>todos</p>
 
-        <TodosProvider>
-          <Todos />
-        </TodosProvider>
+      <TodosProvider>
+        <Todos />
+      </TodosProvider>
 
-        <Footer />
-      </div>
-    </GlobalModelsProvider>
+      <Footer />
+    </div>
   )
 }
-function Footer () {
+function Footer() {
   return (
     <div className='text-[#bfbfbf] text-xs mt-14 leading-loose'>
       <p className='font-extralight'>Double-click to edit a todo</p>
@@ -39,12 +37,12 @@ function Footer () {
           className='font-normal'
           href='https://github.com/carlosfernandezcabrero/todo-app-react'
         >
-          Carlos Fernandez's
+          Carlos Fernandez&apos;s
         </a> and <a
           className='font-normal'
           href='https://wishawa.github.io/consecuit/todomvc/'
-                 >
-          Wisha Wa's
+        >
+          Wisha Wa&apos;s
         </a>
       </p>
     </div>

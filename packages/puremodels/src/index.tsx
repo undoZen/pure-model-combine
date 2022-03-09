@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPureModel, Initializer, InitializerState, Model } from '@pure-model/core'
 import { shallowEqual } from 'fast-equals'
 import mapValues from 'lodash.mapvalues'
@@ -51,13 +51,13 @@ type CreateModelsSelectors = <M extends Record<string, Initializer>>(modelInitia
 type CreateModelsSelectorsActions = <M extends Record<string, Initializer>>(modelInitializers: M, selectors: Selectors<M>, actions: Actions<M>) => Combine<M>
 type CreateCombine = CreateModels | CreateModelsSelectors | CreateModelsSelectorsActions
 
-function getStateFromModels<SS extends ModelRecord> (models: SS): States<SS> {
+function getStateFromModels<SS extends ModelRecord>(models: SS): States<SS> {
   return Object.keys(models).reduce((acc, key) => {
     acc[key as keyof SS] = models[key].store.getState()
     return acc
   }, {} as States<SS>)
 }
-export function subscribeModels<SS extends ModelRecord> (models: SS, callback: (models: States<SS>) => void) {
+export function subscribeModels<SS extends ModelRecord>(models: SS, callback: (models: States<SS>) => void) {
   const cachedState = getStateFromModels(models)
   const subscriptions = Object.keys(models).map((key: keyof SS) => {
     return models[key].store.subscribe(() => {
@@ -72,7 +72,7 @@ export function subscribeModels<SS extends ModelRecord> (models: SS, callback: (
   }
 }
 
-export function useModelStates<SS extends ModelRecord> (
+export function useModelStates<SS extends ModelRecord>(
   models: SS
 ): States<SS> {
   const modelsRef = useRef(models)
@@ -111,7 +111,7 @@ export function useModelStates<SS extends ModelRecord> (
   return useSubscription(subsRef.current)
 }
 
-function useModels<SS extends ModelRecord> (
+function useModels<SS extends ModelRecord>(
   models: SS
 ): [States<SS>, () => SS] {
   const modelsRef = useRef(models)
@@ -128,7 +128,7 @@ function useModels<SS extends ModelRecord> (
       subscribe: (callback: (states: States<SS>) => void) => subscribeModels(models, callback)
     }
   }
-  const gm = useCallback(function getModels () { return modelsRef.current }, [])
+  const gm = useCallback(function getModels() { return modelsRef.current }, [])
   return [useSubscription(subsRef.current), gm]
 }
 
@@ -153,9 +153,9 @@ const useIsomorphicLayoutEffect =
     ? useLayoutEffect
     : useEffect
 
-const getToProvider = (globalModels: Initializer[], GlobalModelsContext: any) => () => {
+const getToProvider = (globalModels: Initializer[]) => () => {
   const ModelsContext = createContext<any>({ models: {}, state: {} })
-  function ModelsProvider ({
+  function ModelsProvider({
     children,
     ...props
   }: PropsWithChildren<{ models: any }>) {
@@ -171,7 +171,7 @@ const getToProvider = (globalModels: Initializer[], GlobalModelsContext: any) =>
     const { models: modelInitializers } = combineData
     const getSelectors = combineData.selectors || (() => ({}))
     const getActions = combineData.actions || (() => ({}))
-    function Provider ({ children, ...props }: PropsWithChildren<any>) {
+    function Provider({ children, ...props }: PropsWithChildren<any>) {
       const rnp: number = useMemoShallowEqual(() => Math.random(), props)
       const selectors = useMemo(() => getSelectors(props), [rnp])
       const rnm: number = useMemoShallowEqual(() => Math.random(), modelInitializers)
@@ -186,8 +186,6 @@ const getToProvider = (globalModels: Initializer[], GlobalModelsContext: any) =>
           return createPureModel(initializer)
         })
       }, [rnm])
-      const { getDep, setDeps } = useContext(GlobalModelsContext)
-      const cacheRef = useRef([] as [Initializer, Model][])
       const modelsCache = Object.keys(modelInitializers).map((name) => {
         const initializer = modelInitializers[name] as Initializer
         if (!globalModels.includes(initializer)) {
@@ -223,7 +221,7 @@ const getToProvider = (globalModels: Initializer[], GlobalModelsContext: any) =>
       const state = useTrackedSelector()
       const selectors = useContext(ModelsContext).selectors
       return new Proxy(state as any, {
-        get (target, key) {
+        get(target, key) {
           console.log('in proxy', key, target)
           const selector = selectors[key]
           return typeof selector !== 'function' ? null : selector(target)
@@ -245,7 +243,7 @@ const getToProvider = (globalModels: Initializer[], GlobalModelsContext: any) =>
     Provider.useModels = useModels
     Provider.useActions = useActions
 
-    function toComponent (Component: any) {
+    function toComponent(Component: any) {
       const ComponentWrapped = ({ children, ...props }: PropsWithChildren<any>) => {
         const actions = useActions()
         const selected = useSelected()
@@ -258,7 +256,7 @@ const getToProvider = (globalModels: Initializer[], GlobalModelsContext: any) =>
           {children}
         </Component>
       }
-      function ComponentWrappedWithProvider ({ children, ...props }: PropsWithChildren<any>) {
+      function ComponentWrappedWithProvider({ children, ...props }: PropsWithChildren<any>) {
         return <Provider {...props}>
           <ComponentWrapped>{children}</ComponentWrapped>
         </Provider>
@@ -276,28 +274,8 @@ const getToProvider = (globalModels: Initializer[], GlobalModelsContext: any) =>
   }
 }
 export const adaptReact = (globalModels: Initializer[]) => {
-  const GlobalModelsContext = createContext<any>({
-    deps: new Map<Initializer, Model>(),
-    // setDep: (i: Initializer, m: Model) => { },
-    setDeps: (s: (ns: any) => void) => { },
-    getDep: (i: Initializer) => { }
-  })
-  function GlobalModelsProvider ({ children, ...props }: any) {
-    const [deps, _setDeps] = useState(() => new Map<Initializer, Model>())
-    const getDep = useCallback((i: Initializer) => deps.get(i), [deps])
-    const setDeps = useCallback((args: [Initializer, Model][]) => {
-      if (!args.length) {
-        return
-      }
-      _setDeps(deps => {
-        return new Map([...deps.entries(), ...args])
-      })
-    }, [_setDeps])
-    return <GlobalModelsContext.Provider value={{ deps, setDeps, getDep }} {...props}>{children}</GlobalModelsContext.Provider>
-  }
   return {
-    toProvider: getToProvider(globalModels, GlobalModelsContext),
-    GlobalModelsProvider
+    toProvider: getToProvider(globalModels)
   }
 }
 const deps = new Map<Initializer, Model>()
@@ -345,4 +323,19 @@ export const addSelectors: AddSelectors = (selectors) => (combineData) => {
       return (v) => v({ type: 'modelsAndSelectorsAndActions', models: combineData.models, actions: combineData.actions, selectors })
     }
   }
+}
+
+export const createCombine: CreateCombine = <M extends Record<string, Initializer>>(
+  modelInitializers: M,
+  selectorsOrActions: Selectors<M> | Actions<M> | undefined | null,
+  actions: Actions<M>
+) => {
+  let combine: Combine<M> = createModels(modelInitializers)
+  if (selectorsOrActions) {
+    combine = combine(addSelectors(selectorsOrActions))
+  }
+  if (actions) {
+    combine = combine(addActions(actions))
+  }
+  return combine
 }
