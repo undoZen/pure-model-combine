@@ -9,46 +9,31 @@ export type ModelState<S extends Model<any>> = S extends Model<infer T> ? T : ne
 export type States<SS extends Record<string, Model<any>>> = {
   [K in keyof SS]: ModelState<SS[K]>
 }
+type IR = Record<string, Initializer>
 export type ModelRecord = Record<string, Model<any>>
 export type InitializerModel<I extends Initializer<any>> = Model<InitializerState<I>>
-export type InitializerModels<SS extends Record<string, Initializer<any>>> = {
+export type InitializerModels<SS extends IR> = {
   [K in keyof SS]: InitializerModel<SS[K]>
 }
-export type InitializerModelState<SS extends Record<string, Initializer<any>>> = {
+export type InitializerModelState<SS extends IR> = {
   [K in keyof SS]: InitializerState<SS[K]>
 }
-type Models<M extends Record<string, Initializer>> = {
-  type: 'onlyModels',
-  models: M
-}
-type Selectors<M extends Record<string, Initializer>> =
+type Selectors<M extends IR> =
   (props: any) => Record<string, (state: InitializerModelState<M>) => any>
-type Actions<M extends Record<string, Initializer>> =
+type Actions<M extends IR> =
   (models: InitializerModels<M>) => Record<string, (...args: any[]) => void>
-type ModelsSelectors<M extends Record<string, Initializer>> = {
-  type: 'modelsAndSelectors'
+type CombineData<M extends IR> = {
   models: M
-  selectors: Selectors<M>
+  selectors?: Selectors<M>
+  actions?: Actions<M>
 }
-type ModelsActions<M extends Record<string, Initializer>> = {
-  type: 'modelsAndActions'
-  models: M
-  actions: Actions<M>
-}
-type ModelsSelectorsActions<M extends Record<string, Initializer>> = {
-  type: 'modelsAndSelectorsAndActions'
-  models: M
-  selectors: Selectors<M>
-  actions: Actions<M>
-}
-type CombineData<M extends Record<string, Initializer>> = Models<M> | ModelsSelectors<M> | ModelsActions<M> | ModelsSelectorsActions<M>
-type AnyVisitor<M extends Record<string, Initializer>> = (combineData: CombineData<M>) => any
-type Combine<M extends Record<string, Initializer>> = (visitor: AnyVisitor<M>) => any
-type TransVisitor<M extends Record<string, Initializer>> = (combineData: CombineData<M>) => Combine<M>
-type CreateModels = <M extends Record<string, Initializer>>(modelInitializers: M) => Combine<M>
-type CreateModelsSelectors = <M extends Record<string, Initializer>>(modelInitializers: M, selectors: Selectors<M>) => Combine<M>
-// type CreateModelsAction = <M extends Record<string, Initializer>>(modelInitializers: M, actions: Actions<M>) => Combine<M>
-type CreateModelsSelectorsActions = <M extends Record<string, Initializer>>(modelInitializers: M, selectors: Selectors<M>, actions: Actions<M>) => Combine<M>
+type AnyVisitor<M extends IR> = (combineData: CombineData<M>) => any
+type Combine<M extends IR> = (visitor: AnyVisitor<M>) => any
+type TransVisitor<M extends IR> = (combineData: CombineData<M>) => Combine<M>
+type CreateModels = <M extends IR>(modelInitializers: M) => Combine<M>
+type CreateModelsSelectors = <M extends IR>(modelInitializers: M, selectors: Selectors<M>) => Combine<M>
+// type CreateModelsAction = <M extends IR>(modelInitializers: M, actions: Actions<M>) => Combine<M>
+type CreateModelsSelectorsActions = <M extends IR>(modelInitializers: M, selectors: Selectors<M>, actions: Actions<M>) => Combine<M>
 type CreateCombine = CreateModels | CreateModelsSelectors | CreateModelsSelectorsActions
 
 function getStateFromModels<SS extends ModelRecord>(models: SS): States<SS> {
@@ -153,68 +138,63 @@ const useIsomorphicLayoutEffect =
     ? useLayoutEffect
     : useEffect
 
-const getToProvider = (globalModels: Initializer[]) => () => {
-  const ModelsContext = createContext<any>({ models: {}, state: {} })
-  function ModelsProvider({
-    children,
-    ...props
-  }: PropsWithChildren<{ models: any }>) {
-    console.log('models', props.models)
-    const state = useModelStates(props.models)
-    return (
-      <ModelsContext.Provider value={{ ...props, state }}>
-        {children}
-      </ModelsContext.Provider>
-    )
-  }
-  return (combineData: any) => {
+export const adaptReact = (globalModels: Initializer[]) => {
+  const deps = new Map<Initializer, Model>()
+
+  const toProvider = () => <M extends IR>(combineData: CombineData<M>) => {
+    const ModelsContext = createContext({ models: {} as InitializerModels<M>, state: {} as InitializerModelState<M> })
+    function ModelsStatesProvider({
+      children,
+      models,
+      ...props
+    }: PropsWithChildren<{ models: InitializerModels<SS> }>) {
+      console.log('models', models)
+      const state = useModelStates(models)
+      return (
+        <ModelsContext.Provider value={{ models, state, ...props }}>
+          {children}
+        </ModelsContext.Provider>
+      )
+    }
     const { models: modelInitializers } = combineData
     const getSelectors = combineData.selectors || (() => ({}))
     const getActions = combineData.actions || (() => ({}))
     function Provider({ children, ...props }: PropsWithChildren<any>) {
-      const rnp: number = useMemoShallowEqual(() => Math.random(), props)
-      const selectors = useMemo(() => getSelectors(props), [rnp])
       const rnm: number = useMemoShallowEqual(() => Math.random(), modelInitializers)
       const models = useMemo(() => {
-        console.log('create models')
         return mapValues(modelInitializers, (initializer, name) => {
           if (globalModels.includes(initializer)) {
-            console.log('cpm1g', name, initializer)
             return undefined
           }
-          console.log('cpm1', name, initializer)
           return createPureModel(initializer)
         })
-      }, [rnm])
-      const modelsCache = Object.keys(modelInitializers).map((name) => {
+      }, [rnm]) as InitializerModels<M>
+      Object.keys(modelInitializers).forEach((name) => {
         const initializer = modelInitializers[name] as Initializer
         if (!globalModels.includes(initializer)) {
-          return false
+          return
         }
         let dep = deps.get(initializer)
-        if (dep) {
-          console.log('dep cache hit', initializer, dep)
-          return [name, dep]
+        if (!dep) {
+          // console.log('cpm', name, initializer)
+          dep = createPureModel(initializer)
+          deps.set(initializer, dep)
+          return
         }
-        console.log('cpm2', name, initializer)
-        dep = createPureModel(initializer)
-        deps.set(initializer, dep)
-        return [name, dep]
-      }).filter(Boolean)
-      console.log('modelsCache', modelsCache)
-      // @ts-ignore
-      modelsCache.forEach(([name, dep]) => {
-        models[name] = dep
+        // console.log('dep cache hit', initializer, dep)
+        models[name as keyof M] = dep
       })
-      console.log('models', models)
+      // console.log('models', models)
+      const rnp: number = useMemoShallowEqual(() => Math.random(), props)
+      const selectors = useMemo(() => getSelectors(props), [rnp])
       const actions = useMemo(() => getActions(models, props), [rnp])
-      return <ModelsProvider models={models} selectors={selectors} actions={actions} {...props}>{children}</ModelsProvider>
+      return <ModelsStatesProvider models={models} selectors={selectors} actions={actions} {...props}>{children}</ModelsStatesProvider>
     }
 
-    const useSelector = () => {
+    const useSelector = (selector: (state: InitializerModelState<M>) => any) => {
       const state = useContext(ModelsContext).state
       console.log('state', state)
-      return state
+      return selector(state)
     }
     const useTrackedSelector = createTrackedSelector(useSelector)
     const useSelected = () => {
@@ -272,70 +252,17 @@ const getToProvider = (globalModels: Initializer[]) => () => {
 
     return Provider
   }
-}
-export const adaptReact = (globalModels: Initializer[]) => {
-  return {
-    toProvider: getToProvider(globalModels)
-  }
-}
-const deps = new Map<Initializer, Model>()
-
-export const createModels: CreateModels = (modelInitializers) => {
-  return (visitor) => visitor({ type: 'onlyModels', models: modelInitializers })
-}
-// type AddActions = <M extends Record<string, Initializer>>(actions: Actions<M>) =>
-// (combine: Combine<M>) => Combine<M>
-type AddActions<M = any> = M extends Record<string, Initializer> ? (actions: Actions<M>) => TransVisitor<M> : never
-type AddSelectors<M = any> = M extends Record<string, Initializer> ? (selectors: Selectors<M>) => TransVisitor<M> : never
-
-export const addActions: AddActions = (actions) => (combineData) => {
-  if (combineData.type === 'onlyModels') {
-    return (v) => v({ type: 'modelsAndActions', models: combineData.models, actions })
-  } else if (combineData.type === 'modelsAndSelectors') {
-    return (v) => v({ type: 'modelsAndSelectorsAndActions', models: combineData.models, selectors: combineData.selectors, actions })
-  } else {
-    const _actions = actions
-    actions = (models: Record<string, Model<any>>) => ({
-      ...combineData.actions(models),
-      ..._actions(models)
-    })
-    if (combineData.type === 'modelsAndActions') {
-      return (v) => v({ type: 'modelsAndActions', models: combineData.models, actions })
-    } else {
-      return (v) => v({ type: 'modelsAndSelectorsAndActions', models: combineData.models, selectors: combineData.selectors, actions })
-    }
-  }
-}
-export const addSelectors: AddSelectors = (selectors) => (combineData) => {
-  if (combineData.type === 'onlyModels') {
-    return (v) => v({ type: 'modelsAndSelectors', models: combineData.models, selectors })
-  } else if (combineData.type === 'modelsAndActions') {
-    return (v) => v({ type: 'modelsAndSelectorsAndActions', models: combineData.models, actions: combineData.actions, selectors })
-  } else {
-    const _selectors = selectors
-    selectors = (props: any) => ({
-      ...combineData.selectors(props),
-      ..._selectors(props)
-    })
-    if (combineData.type === 'modelsAndSelectors') {
-      return (v) => v({ type: 'modelsAndSelectors', models: combineData.models, selectors })
-    } else {
-      return (v) => v({ type: 'modelsAndSelectorsAndActions', models: combineData.models, actions: combineData.actions, selectors })
-    }
-  }
+  return { toProvider }
 }
 
-export const createCombine: CreateCombine = <M extends Record<string, Initializer>>(
+export const createCombine: CreateCombine = <M extends IR>(
   modelInitializers: M,
-  selectorsOrActions: Selectors<M> | Actions<M> | undefined | null,
-  actions: Actions<M>
+  selectorsOrActions?: Selectors<M> | Actions<M> | null,
+  actions?: Actions<M>
 ) => {
-  let combine: Combine<M> = createModels(modelInitializers)
-  if (selectorsOrActions) {
-    combine = combine(addSelectors(selectorsOrActions))
-  }
-  if (actions) {
-    combine = combine(addActions(actions))
-  }
-  return combine
+  return (visitor: AnyVisitor<M>) => visitor({
+    models: modelInitializers,
+    selectors: selectorsOrActions || undefined,
+    actions: actions
+  })
 }
