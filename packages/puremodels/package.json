@@ -9,7 +9,7 @@
     "scripts": {
         "build": "tsup src/index.tsx --format esm,cjs --dts --external react",
         "dev": "tsup src/index.tsx --format esm,cjs --watch --dts --external react",
-        "lint": "TIMING=1 eslint src --fix",
+        "lint": "TIMING=1 eslint src/**/*.tsx --fix && tsc --noEmit",
         "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
     },
     "files": [
