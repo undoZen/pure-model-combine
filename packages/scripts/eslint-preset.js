@@ -1,4 +1,9 @@
 module.exports = {
+  settings: {
+    react: {
+      version: "detect",
+    },
+  },
   env: {
     browser: true,
     es2021: true
@@ -20,5 +25,9 @@ module.exports = {
     '@typescript-eslint'
   ],
   rules: {
+    // suppress errors for missing 'import React' in files
+    "react/react-in-jsx-scope": "off",
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": ["error"]
   }
 }

@@ -1,8 +1,8 @@
-import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPureModel, Initializer, InitializerState, Model } from '@pure-model/core'
 import { shallowEqual } from 'fast-equals'
 import mapValues from 'lodash.mapvalues'
-import { createContainer, createTrackedSelector } from 'react-tracked'
+import { createTrackedSelector } from 'react-tracked'
 import { useSubscription } from 'use-subscription'
 
 export type ModelState<S extends Model<any>> = S extends Model<infer T> ? T : never
@@ -61,7 +61,6 @@ export function subscribeModels<SS extends ModelRecord> (models: SS, callback: (
   const cachedState = getStateFromModels(models)
   const subscriptions = Object.keys(models).map((key: keyof SS) => {
     return models[key].store.subscribe(() => {
-      console.log('changed', models, key, models[key].store.getState())
       callback({
         ...cachedState,
         [key]: models[key].store.getState()
@@ -69,7 +68,6 @@ export function subscribeModels<SS extends ModelRecord> (models: SS, callback: (
     })
   })
   return () => {
-    console.log('unsub called')
     subscriptions.forEach(unsubscribe => unsubscribe())
   }
 }
@@ -133,13 +131,6 @@ function useModels<SS extends ModelRecord> (
   const gm = useCallback(function getModels () { return modelsRef.current }, [])
   return [useSubscription(subsRef.current), gm]
 }
-
-const {
-  Provider: ModelsProvider,
-  useTracked: useStateAndModels
-} = createContainer(({ models }: { models: ModelRecord }) => {
-  return useModels(models)
-})
 
 const EMPTY_SYMBOL = Symbol('EMPTY')
 const useMemoShallowEqual = (fn: () => any, compare: any) => {
