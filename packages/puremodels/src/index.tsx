@@ -144,7 +144,7 @@ function isModel<M = any> (model: any): model is M extends Model<any> ? M : neve
   return model && !!model.store && !!model.actions
 }
 
-export const adaptReact = (globalModels: Initializer[], preloadedStatesList: any[], context: ModelContextValue) => {
+export const adaptReact = (globalModels: Initializer[], preloadedStatesList: any[] = [], context?: ModelContextValue) => {
   const deps = new Map<Initializer, Model>()
   function getCachedDep<I extends Initializer<any>> (initializer: I) {
     if (!globalModels.includes(initializer)) {
@@ -222,11 +222,12 @@ export const adaptReact = (globalModels: Initializer[], preloadedStatesList: any
     const useTrackedSelector = createTrackedSelector(useSelector)
     const useSelected = (props: any) => {
       const state = useTrackedSelector()
+      console.log('in useSelected', props)
       const rmp: number = useMemoShallowEqual(() => Math.random(), props)
       const selectors = useMemo(() => getSelectors(props), [rmp])
       return new Proxy(state as any, {
         get (target, key) {
-          console.log('in proxy', key, target)
+          console.log('in proxy', key, target, props)
           const selector = selectors[key as string]
           return typeof selector !== 'function' ? null : selector(target)
         }
@@ -256,6 +257,7 @@ export const adaptReact = (globalModels: Initializer[], preloadedStatesList: any
 
     function toComponent (Component: any) {
       const ComponentWrapped = ({ children, ...props }: PropsWithChildren<any>) => {
+        console.log('ComponentWrapped', props)
         const actions = useActions(props)
         const selected = useSelected(props)
         return <Component
@@ -267,9 +269,9 @@ export const adaptReact = (globalModels: Initializer[], preloadedStatesList: any
           {children}
         </Component>
       }
-      function ComponentWrappedWithProvider ({ children, ...props }: PropsWithChildren<any>) {
-        return <Provider {...props}>
-          <ComponentWrapped>{children}</ComponentWrapped>
+      function ComponentWrappedWithProvider ({ children, models, context, preloadedStates, ...props }: PropsWithChildren<PProps & any>) {
+        return <Provider models={models} context={context} preloadedStates={preloadedStates}>
+          <ComponentWrapped {...props}>{children}</ComponentWrapped>
         </Provider>
       }
       ComponentWrappedWithProvider.Provider = Provider
