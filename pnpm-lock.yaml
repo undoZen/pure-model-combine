@@ -84,11 +84,13 @@ importers:
     specifiers:
       '@pure-model/core': ^1.2.13
       '@tsconfig/vite-react': ^1.0.0
+      '@types/lodash.mapkeys': ^4.6.6
       '@types/lodash.mapvalues': ^4.6.6
       '@types/react': ^17.0.39
       '@types/use-subscription': ^1.0.0
       eslint: ^7.32.0
       fast-equals: ^3.0.0
+      lodash.mapkeys: ^4.6.0
       lodash.mapvalues: ^4.6.0
       react: ^17.0.2
       react-tracked: ^1.7.6
@@ -100,7 +102,9 @@ importers:
       use-subscription: ^1.5.1
     dependencies:
       '@pure-model/core': 1.2.13
+      '@types/lodash.mapkeys': 4.6.6
       fast-equals: 3.0.0
+      lodash.mapkeys: 4.6.0
       lodash.mapvalues: 4.6.0
       react: 17.0.2
       react-tracked: 1.7.6_react@17.0.2+scheduler@0.20.2
@@ -133,7 +137,10 @@ importers:
       eslint-plugin-promise: ^5.2.0
       eslint-plugin-react: ^7.29.3
       eslint-plugin-react-hooks: ^4.3.0
+      react: ^17.0.2
       typescript: ^4.6.2
+    dependencies:
+      react: 17.0.2
     devDependencies:
       '@babel/core': 7.17.5
       '@babel/eslint-parser': 7.17.0_@babel+core@7.17.5+eslint@7.32.0
@@ -597,6 +604,12 @@ packages:
     resolution: {integrity: sha1-7ihweulOEdK4J7y+UnC86n8+ce4=}
     dev: true
 
+  /@types/lodash.mapkeys/4.6.6:
+    resolution: {integrity: sha512-OUGOlEkPP6nSwb/k7J8mPcS5vvRkfHVlkRioEq1fQy14ZWmktwvrqNgOUpYpmC9U6NJ5jBLfn0ymRdE99VLadg==}
+    dependencies:
+      '@types/lodash': 4.14.179
+    dev: false
+
   /@types/lodash.mapvalues/4.6.6:
     resolution: {integrity: sha512-Mt9eg3AqwAt5HShuOu8taiIYg0sLl4w3vDi0++E0VtiOtj9DqQHaxVr3wicVop0eDEqr5ENbht7vsLJlkMHL+w==}
     dependencies:
@@ -605,7 +618,6 @@ packages:
 
   /@types/lodash/4.14.179:
     resolution: {integrity: sha512-uwc1x90yCKqGcIOAT6DwOSuxnrAbpkdPsUOZtwrXb4D/6wZs+6qG7QnIawDuZWg0sWpxl+ltIKCaLoMlna678w==}
-    dev: true
 
   /@types/parse-json/4.0.0:
     resolution: {integrity: sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==}
@@ -2214,6 +2226,10 @@ packages:
       p-locate: 2.0.0
       path-exists: 3.0.0
     dev: true
+
+  /lodash.mapkeys/4.6.0:
+    resolution: {integrity: sha1-3yz6Ix18V8eorQA6va1dc9PqUZU=}
+    dev: false
 
   /lodash.mapvalues/4.6.0:
     resolution: {integrity: sha1-G6+lAF3p3W9PJmaMMMo3IwzJaJw=}

@@ -7,8 +7,8 @@
     "types": "dist/index.d.ts",
     "sideEffects": false,
     "scripts": {
-        "build": "tsup src/index.tsx --format esm,cjs --dts --external react",
-        "dev": "tsup src/index.tsx --format esm,cjs --watch --dts --external react",
+        "build": "tsup src/index.tsx --format esm,cjs --dts --external react --inject node_modules/scripts/react-shim.js",
+        "dev": "tsup src/index.tsx --format esm,cjs --watch --dts --external react --inject node_modules/scripts/react-shim.js",
         "lint": "TIMING=1 eslint src/**/*.tsx --fix && tsc --noEmit",
         "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
     },
@@ -17,7 +17,9 @@
     ],
     "dependencies": {
         "@pure-model/core": "^1.2.13",
+        "@types/lodash.mapkeys": "^4.6.6",
         "fast-equals": "^3.0.0",
+        "lodash.mapkeys": "^4.6.0",
         "lodash.mapvalues": "^4.6.0",
         "react": "^17.0.2",
         "react-tracked": "^1.7.6",

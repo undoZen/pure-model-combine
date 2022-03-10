@@ -1,97 +1,97 @@
-import { adaptReact, createCombine } from '@pure-model-combine/core';
-import EditInitializer from './edit';
-import TodoFilter from './filter';
-import HeaderInitializer from "./header";
-import TodosInitializer from "./todos";
+import { adaptReact, createCombine } from '@pure-model-combine/core'
+import EditInitializer from './edit'
+import TodoFilter from './filter'
+import HeaderInitializer from './header'
+import TodosInitializer from './todos'
 
-export const { toProvider, GlobalModelsProvider } = adaptReact([TodosInitializer, TodoFilter])
+export const { toProvider } = adaptReact([TodosInitializer, TodoFilter])
 
 export const headerCombine = createCombine({
   todos: TodosInitializer,
-  header: HeaderInitializer,
+  header: HeaderInitializer
 }, (props) => ({
   headerText: (state) => state.header,
   todos: (state) => state.todos,
-  //@ts-ignore
-  isAllCompleted: ({ todos }) => todos.every(({ completed }) => completed),
+  // @ts-ignore
+  isAllCompleted: ({ todos }) => todos.every(({ completed }) => completed)
 }), (models) => ({
-  //@ts-ignore
+  // @ts-ignore
   toggleAll: () => models.todos.actions.toggleAll(),
   changeHeaderText: (text: string) => {
-    //@ts-ignore
+    // @ts-ignore
     return models.header.actions.setHeaderText(text)
   },
   addTodo: () => {
     const text = models.header.store.getState()
-    //@ts-ignore
+    // @ts-ignore
     models.todos.actions.addTodo(text)
-    //@ts-ignore
+    // @ts-ignore
     models.header.actions.setHeaderText('')
   }
 }))
 const HeaderProvider = headerCombine(toProvider())
-export { HeaderProvider };
-export { TodosProvider };
-export { FilterProvider };
+export { HeaderProvider }
+export { TodosProvider }
+export { FilterProvider }
 
 const todosCombine = createCombine({
   todo: TodosInitializer,
-  filter: TodoFilter,
+  filter: TodoFilter
 }, (props) => ({
-  //@ts-ignore
+  // @ts-ignore
   count: (state) => state.todo.length,
   list: (state) => {
     if (state.filter === 'all') {
       return state.todo
     } else if (state.filter === 'active') {
-      //@ts-ignore
+      // @ts-ignore
       return state.todo.filter(todo => !todo.completed)
     } else if (state.filter === 'completed') {
-      //@ts-ignore
+      // @ts-ignore
       return state.todo.filter(todo => todo.completed)
     }
-  },
+  }
 }))
 
 const TodosProvider = todosCombine(toProvider())
 
 const filterCombine = createCombine({
   todos: TodosInitializer,
-  filter: TodoFilter,
+  filter: TodoFilter
 }, (props) => ({
   selectedType: (state) => state.filter,
-  //@ts-ignore
+  // @ts-ignore
   leftCount: (state) => state.todos.filter(todo => !todo.completed).length,
-  //@ts-ignore
-  allCount: (state) => state.todos.length,
+  // @ts-ignore
+  allCount: (state) => state.todos.length
 }), (models) => ({
-  //@ts-ignore
+  // @ts-ignore
   clearCompleted: () => models.todos.actions.clearCompleted(),
   changeFilter: (type: string) => {
-    //@ts-ignore
+    // @ts-ignore
     models.filter.actions.setFilterType(type)
   }
 }))
 const FilterProvider = filterCombine(toProvider())
 
-//@ts-ignore
+// @ts-ignore
 const getTodoSelector = (todoId: number | string) => (todos) => todos.find(({ id }) => id === todoId)
 export const todoCombine = createCombine({
   todos: TodosInitializer,
-  edit: EditInitializer,
+  edit: EditInitializer
 }, (props) => {
-  //@ts-ignore
+  // @ts-ignore
   const todo = (state) => getTodoSelector(props.id)(state.todos)
-  //@ts-ignore
+  // @ts-ignore
   const isEditing = (state) => state.edit.status
   return {
-    //@ts-ignore
+    // @ts-ignore
     editingValue: (state) => isEditing(state) ? state.edit.content : todo(state).content,
     isEditing,
-    todo,
+    todo
   }
-  //@ts-ignore
-}, (models, props) => {
+  // @ts-ignore
+}, (models, getSelected, props) => {
   const { id } = props
   const todo = getTodoSelector(id)
   const toggle = () => {
@@ -122,7 +122,7 @@ export const todoCombine = createCombine({
     update,
     startEdit,
     endEdit,
-    submit,
+    submit
   }
 })
 export const TodoProvider = todoCombine(toProvider())

@@ -2,6 +2,7 @@
   "exclude": ["node_modules"],
   "extends": "tsconfig/react-library.json",
   "compilerOptions": {
+    "lib": ["ES2016", "DOM"],
     "rootDir": "src",
     "outDir": "dist"
   },
