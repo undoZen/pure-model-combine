@@ -28,11 +28,11 @@ type CombineData<M extends IR> = {
 type AnyVisitor<M extends IR> = (combineData: CombineData<M>) => any
 type Combine<M extends IR> = <V extends AnyVisitor<M>>(visitor: V) => ReturnType<V>
 // type TransVisitor<M extends IR> = (combineData: CombineData<M>) => Combine<M>
-type CreateModels = <M extends IR>(modelInitializers: M) => Combine<M>
-type CreateModelsSelectors = <M extends IR>(modelInitializers: M, selectors: Selectors<M>) => Combine<M>
-// type CreateModelsAction = <M extends IR>(modelInitializers: M, actions: Actions<M>) => Combine<M>
-type CreateModelsSelectorsActions = <M extends IR>(modelInitializers: M, selectors: Selectors<M>, actions: Actions<M>) => Combine<M>
-type CreateCombine = CreateModels | CreateModelsSelectors | CreateModelsSelectorsActions
+type CreateCombine = {
+  <M extends IR>(modelInitializers: M): Combine<M>
+  <M extends IR>(modelInitializers: M, selectors: Selectors<M>): Combine<M>
+  <M extends IR>(modelInitializers: M, selectors: Selectors<M>, actions: Actions<M>): Combine<M>
+}
 
 function getStateFromModels<SS extends ModelRecord> (models: SS): States<SS> {
   return Object.keys(models).reduce((acc, key) => {
