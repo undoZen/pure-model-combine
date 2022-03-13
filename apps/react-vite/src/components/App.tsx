@@ -2,7 +2,7 @@ import '../../styles/App.css'
 import { TodosProvider } from 'headless'
 import { Todos } from './todos'
 
-function App() {
+function App () {
   return (
     <div className='app w-11/12 md:w-8/12 lg:w-6/12 mx-auto max-w-prose text-center mt-[-7px]'>
       <p className='app__title font-thin text-[100px]'>todos</p>
@@ -15,7 +15,7 @@ function App() {
     </div>
   )
 }
-function Footer() {
+function Footer () {
   return (
     <div className='text-[#bfbfbf] text-xs mt-14 leading-loose'>
       <p className='font-extralight'>Double-click to edit a todo</p>

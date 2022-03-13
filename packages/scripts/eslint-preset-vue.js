@@ -1,9 +1,5 @@
 module.exports = {
-  settings: {
-    react: {
-      version: "detect",
-    },
-  },
+  root: true,
   env: {
     browser: true,
     node: true,
@@ -11,25 +7,21 @@ module.exports = {
   },
   extends: [
     'prettier',
-    'plugin:react/recommended',
+    'plugin:vue/vue3-recommended',
     'eslint:recommended',
     'standard'
   ],
-  parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaFeatures: {
-      jsx: true
-    },
+    parser: '@typescript-eslint/parser',
     ecmaVersion: 12,
     sourceType: 'module'
   },
   plugins: [
-    'react',
-    '@typescript-eslint'
+    'vue',
+    '@typescript-eslint',
+    'simple-import-sort'
   ],
   rules: {
-    // suppress errors for missing 'import React' in files
-    "react/react-in-jsx-scope": "off",
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": "warn"
   }

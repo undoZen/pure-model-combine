@@ -1,5 +1,5 @@
-import { setupStore } from '@pure-model/core';
-import produce, { Draft } from 'immer';
+import { setupStore } from '@pure-model/core'
+import produce, { Draft } from 'immer'
 
 export type DemoState = {
   count: number;
@@ -8,11 +8,11 @@ export type DemoState = {
 
 const initialState: DemoState = {
   count: 0,
-  text: '',
-};
+  text: ''
+}
 
-export function DemoInitializer() {
-  let { store, actions } = setupStore({
+export function DemoInitializer () {
+  const { store, actions } = setupStore({
     initialState,
     reducers: {
       incr: produce((state: Draft<DemoState>) => {
@@ -23,9 +23,9 @@ export function DemoInitializer() {
       }),
       changeText: produce((state: Draft<DemoState>, content: string) => {
         state.text = content
-      }),
-    },
-  });
+      })
+    }
+  })
 
-  return { store, actions };
-};
+  return { store, actions }
+}

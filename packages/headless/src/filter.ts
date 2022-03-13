@@ -4,7 +4,7 @@ export type FilterType = 'all' | 'active' | 'completed'
 
 const initialState = 'all'
 
-export default function TodoFilter(){
+export default function TodoFilter () {
   return setupStore({
     name: 'filter',
     initialState: initialState as FilterType,

@@ -1,10 +1,10 @@
 import { setupStore, setupPreloadCallback } from '@pure-model/core'
 import { setupTodosContext } from './context'
 
-export default function HeaderInitializer() {
-  let ctx = setupTodosContext()
+export default function HeaderInitializer () {
+  const ctx = setupTodosContext()
 
-  let header = setupStore({
+  const header = setupStore({
     name: 'header',
     initialState: '',
     reducers: {
@@ -14,7 +14,7 @@ export default function HeaderInitializer() {
 
   setupPreloadCallback(async () => {
     console.log('setupPreloadCallback')
-    let text = await ctx.getInitialText()
+    const text = await ctx.getInitialText()
     header.actions.setHeaderText(text)
   })
 

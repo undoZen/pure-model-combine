@@ -1,5 +1,5 @@
-import { setupStore } from '@pure-model/core';
-import produce, { Draft } from 'immer';
+import { setupStore } from '@pure-model/core'
+import produce, { Draft } from 'immer'
 
 export type EditState = {
   status: boolean;
@@ -8,11 +8,11 @@ export type EditState = {
 
 const initialState: EditState = {
   status: false,
-  content: '',
-};
+  content: ''
+}
 
-export default function EditInitializer() {
-  let edit = setupStore({
+export default function EditInitializer () {
+  const edit = setupStore({
     initialState,
     reducers: {
       disable: produce((state: Draft<EditState>) => {
@@ -23,9 +23,9 @@ export default function EditInitializer() {
       }),
       update: produce((state: Draft<EditState>, content: string) => {
         state.content = content
-      }),
-    },
-  });
+      })
+    }
+  })
 
-  return edit;
-};
+  return edit
+}

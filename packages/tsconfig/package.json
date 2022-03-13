@@ -9,8 +9,7 @@
   "files": [
     "base.json",
     "vite.json",
-    "node12.json",
-    "node14.json",
+    "vue.json",
     "react-library.json"
   ]
 }

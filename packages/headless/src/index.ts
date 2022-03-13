@@ -38,20 +38,17 @@ const todosCombine = createCombine({
   todo: TodosInitializer,
   filter: TodoFilter
 }, (props) => ({
-  // @ts-ignore
   count: (state) => state.todo.length,
   list: (state) => {
     if (state.filter === 'all') {
       return state.todo
     } else if (state.filter === 'active') {
-      // @ts-ignore
       return state.todo.filter(todo => !todo.completed)
     } else if (state.filter === 'completed') {
-      // @ts-ignore
       return state.todo.filter(todo => todo.completed)
     }
   }
-}))
+}), () => ({}))
 
 const TodosProvider = todosCombine(toProvider())
 
@@ -95,24 +92,31 @@ export const todoCombine = createCombine({
   const { id } = props
   const todo = getTodoSelector(id)
   const toggle = () => {
+    // @ts-ignore
     models.todos.actions.toggleTodo(id)
   }
   const remove = () => {
+    // @ts-ignore
     models.todos.actions.removeTodo(id)
   }
   const update = (content: string) => {
+    // @ts-ignore
     models.edit.actions.update(content)
   }
   const startEdit = () => {
     const content = todo(models.todos.store.getState()).content
+    // @ts-ignore
     models.edit.actions.update(content)
+    // @ts-ignore
     models.edit.actions.enable()
   }
   const endEdit = () => {
+    // @ts-ignore
     models.edit.actions.disable()
   }
   const submit = () => {
     const content = models.edit.store.getState().content
+    // @ts-ignore
     models.todos.actions.updateTodo({ id, content })
     endEdit()
   }
