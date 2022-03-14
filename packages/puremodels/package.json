@@ -9,7 +9,7 @@
     "scripts": {
         "build": "tsup src/index.tsx --format esm,cjs --dts --external react --inject node_modules/scripts/react-shim.js",
         "dev": "tsup src/index.tsx --format esm,cjs --watch --dts --external react --inject node_modules/scripts/react-shim.js",
-        "lint": "TIMING=1 eslint src/**/*.tsx --fix && tsc --noEmit",
+        "lint": "TIMING=1 eslint --ext .js,.jsx,.ts,.tsx src --ignore-path ../../.gitignore . --fix && tsc --noEmit",
         "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
     },
     "files": [

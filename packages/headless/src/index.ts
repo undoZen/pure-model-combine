@@ -1,6 +1,6 @@
 import { adaptReact, createCombine } from '@pure-model-combine/core'
 import EditInitializer from './edit'
-import TodoFilter from './filter'
+import TodoFilter, { FilterType } from './filter'
 import HeaderInitializer from './header'
 import TodosInitializer from './todos'
 
@@ -9,124 +9,111 @@ export const { toProvider } = adaptReact([TodosInitializer, TodoFilter])
 export const headerCombine = createCombine({
   todos: TodosInitializer,
   header: HeaderInitializer
-}, (props) => ({
-  headerText: (state) => state.header,
-  todos: (state) => state.todos,
-  // @ts-ignore
-  isAllCompleted: ({ todos }) => todos.every(({ completed }) => completed)
-}), (models) => ({
-  // @ts-ignore
-  toggleAll: () => models.todos.actions.toggleAll(),
-  changeHeaderText: (text: string) => {
-    // @ts-ignore
-    return models.header.actions.setHeaderText(text)
-  },
-  addTodo: () => {
-    const text = models.header.store.getState()
-    // @ts-ignore
-    models.todos.actions.addTodo(text)
-    // @ts-ignore
-    models.header.actions.setHeaderText('')
+}, (props, models) => {
+  // type State = ReturnType<typeof getState>
+  return {
+    selectors: {
+      headerText: (state) => state.header,
+      todos: (state) => state.todos,
+      isAllCompleted: ({ todos }) => todos.every(({ completed }) => completed)
+    },
+    actions: {
+      toggleAll: () => models.todos.actions.toggleAll(),
+      changeHeaderText: (text: string) => {
+        return models.header.actions.setHeaderText(text)
+      },
+      addTodo: () => {
+        const text = models.header.store.getState()
+        models.todos.actions.addTodo(text)
+        models.header.actions.setHeaderText('')
+      }
+    }
   }
-}))
-const HeaderProvider = headerCombine(toProvider())
-export { HeaderProvider }
-export { TodosProvider }
-export { FilterProvider }
+})
+export const HeaderProvider = headerCombine(toProvider())
 
 const todosCombine = createCombine({
   todo: TodosInitializer,
   filter: TodoFilter
-}, (props) => ({
-  count: (state) => state.todo.length,
-  list: (state) => {
-    if (state.filter === 'all') {
-      return state.todo
-    } else if (state.filter === 'active') {
-      return state.todo.filter(todo => !todo.completed)
-    } else if (state.filter === 'completed') {
-      return state.todo.filter(todo => todo.completed)
+}, () => ({
+  selectors: {
+    count: (state) => state.todo.length,
+    list: (state) => {
+      if (state.filter === 'all') {
+        return state.todo
+      } else if (state.filter === 'active') {
+        return state.todo.filter(todo => !todo.completed)
+      } else if (state.filter === 'completed') {
+        return state.todo.filter(todo => todo.completed)
+      }
     }
-  }
-}), () => ({}))
+  },
+  actions: {}
+}))
 
-const TodosProvider = todosCombine(toProvider())
+export const TodosProvider = todosCombine(toProvider())
 
 const filterCombine = createCombine({
   todos: TodosInitializer,
   filter: TodoFilter
-}, (props) => ({
-  selectedType: (state) => state.filter,
-  // @ts-ignore
-  leftCount: (state) => state.todos.filter(todo => !todo.completed).length,
-  // @ts-ignore
-  allCount: (state) => state.todos.length
-}), (models) => ({
-  // @ts-ignore
-  clearCompleted: () => models.todos.actions.clearCompleted(),
-  changeFilter: (type: string) => {
-    // @ts-ignore
-    models.filter.actions.setFilterType(type)
+}, (props, models) => ({
+  selectors: {
+    selectedType: (state) => state.filter,
+    leftCount: (state) => state.todos.filter(todo => !todo.completed).length,
+    allCount: (state) => state.todos.length
+  },
+  actions: {
+    clearCompleted: () => models.todos.actions.clearCompleted(),
+    changeFilter: (type: FilterType) => {
+      models.filter.actions.setFilterType(type)
+    }
   }
 }))
-const FilterProvider = filterCombine(toProvider())
+export const FilterProvider = filterCombine(toProvider())
 
-// @ts-ignore
-const getTodoSelector = (todoId: number | string) => (todos) => todos.find(({ id }) => id === todoId)
 export const todoCombine = createCombine({
   todos: TodosInitializer,
   edit: EditInitializer
-}, (props) => {
-  // @ts-ignore
-  const todo = (state) => getTodoSelector(props.id)(state.todos)
-  // @ts-ignore
-  const isEditing = (state) => state.edit.status
-  return {
-    // @ts-ignore
-    editingValue: (state) => isEditing(state) ? state.edit.content : todo(state).content,
-    isEditing,
-    todo
-  }
-  // @ts-ignore
-}, (models, getSelected, props) => {
-  const { id } = props
-  const todo = getTodoSelector(id)
+}, (props: any, models, getState) => {
+  type State = ReturnType<typeof getState>
+  const todo = ({ todos }: State) => todos.find(({ id }) => id === props.id)
+  const isEditing = (state: State) => state.edit.status
   const toggle = () => {
-    // @ts-ignore
-    models.todos.actions.toggleTodo(id)
+    models.todos.actions.toggleTodo(props.id)
   }
   const remove = () => {
-    // @ts-ignore
-    models.todos.actions.removeTodo(id)
+    models.todos.actions.removeTodo(props.id)
   }
   const update = (content: string) => {
-    // @ts-ignore
     models.edit.actions.update(content)
   }
   const startEdit = () => {
-    const content = todo(models.todos.store.getState()).content
-    // @ts-ignore
+    const content = todo(getState())?.content || ''
     models.edit.actions.update(content)
-    // @ts-ignore
     models.edit.actions.enable()
   }
   const endEdit = () => {
-    // @ts-ignore
     models.edit.actions.disable()
   }
   const submit = () => {
     const content = models.edit.store.getState().content
-    // @ts-ignore
-    models.todos.actions.updateTodo({ id, content })
+    models.todos.actions.updateTodo({ id: props.id, content })
     endEdit()
   }
   return {
-    toggle,
-    remove,
-    update,
-    startEdit,
-    endEdit,
-    submit
+    selectors: {
+      editingValue: (state) => isEditing(state) ? state.edit.content : todo(state)?.content || '',
+      isEditing,
+      todo
+    },
+    actions: {
+      toggle,
+      remove,
+      update,
+      startEdit,
+      endEdit,
+      submit
+    }
   }
 })
 export const TodoProvider = todoCombine(toProvider())

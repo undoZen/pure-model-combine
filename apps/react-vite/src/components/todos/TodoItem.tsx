@@ -10,7 +10,7 @@ const TodoItem = TodoProvider.toComponent(({ selected, actions }) => {
   }
   const { remove, toggle, update, startEdit, submit, endEdit } = actions
 
-  let handleKeyUp: React.KeyboardEventHandler = ({ key }) => {
+  const handleKeyUp: React.KeyboardEventHandler = ({ key }) => {
     console.log('key', key)
     if (key === 'Escape') {
       endEdit()
@@ -25,7 +25,7 @@ const TodoItem = TodoProvider.toComponent(({ selected, actions }) => {
   return (
     <li className="border-t-2 border-gray-100 text-2xl" >
       <div className={`flex flex-row group items-center ${isEditing ? 'hidden' : ''}`}>
-        
+
         <button
           type="button"
           role="button"
@@ -38,7 +38,7 @@ const TodoItem = TodoProvider.toComponent(({ selected, actions }) => {
         </button>
         <label
         onDoubleClick={startEdit}
-        className={"flex-1 min-w-0 flex items-center break-all p-2" + (todo.completed ? " text-gray-500 line-through" : " text-gray-800")}
+        className={'flex-1 min-w-0 flex items-center break-all p-2' + (todo.completed ? ' text-gray-500 line-through' : ' text-gray-800')}
   >
           {todo.content}
         </label>

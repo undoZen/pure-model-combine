@@ -6,7 +6,7 @@
     "dev": "vite --host 0.0.0.0 --clearScreen false",
     "build": "vite build",
     "serve": "vite preview",
-    "lint": "TIMING=1 eslint src/**/*.ts{,x} --fix && tsc --noEmit",
+    "lint": "TIMING=1 eslint --ext .js,.jsx,.ts,.tsx src --ignore-path ../../.gitignore . --fix && tsc --noEmit",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "dependencies": {

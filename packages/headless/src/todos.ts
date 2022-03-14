@@ -37,7 +37,7 @@ export default function TodosInitializer () {
           return todo
         })
       }),
-      toggleAll: produce((draft: Draft<Todos>) => {
+      toggleAll: (state: Todos) => produce(state, (draft: Draft<Todos>) => {
         const allCompleted = draft.every(todo => todo.completed)
         if (allCompleted) {
           draft.map((todo: Todo) => {
@@ -54,7 +54,7 @@ export default function TodosInitializer () {
       removeTodo: produce((draft: Draft<Todos>, id: number) => {
         return draft.filter((todo: Todo) => todo.id !== id)
       }),
-      clearCompleted: produce((draft: Draft<Todos>) => {
+      clearCompleted: (state: Todos) => produce(state, (draft: Draft<Todos>) => {
         return draft.filter((todo: Todo) => !todo.completed)
       })
     }

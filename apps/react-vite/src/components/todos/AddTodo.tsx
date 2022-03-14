@@ -16,7 +16,7 @@ export const AddTodo = HeaderProvider.toComponent(({ actions, selected }) => {
   const todosEmpty = !todos.length
   console.log('todos', todos.length, todos, !!isAllCompleted)
 
-  function handleAddTodo(event) {
+  function handleAddTodo (event) {
     if (event.key === 'Enter') {
       const { value } = event.target
 

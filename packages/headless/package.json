@@ -9,7 +9,7 @@
     "scripts": {
         "build": "tsup src/index.ts --format esm,cjs --dts --external react --inject node_modules/scripts/react-shim.js",
         "dev": "tsup src/index.ts --format esm,cjs --watch --dts --external react --inject node_modules/scripts/react-shim.js",
-        "lint": "TIMING=1 eslint src/**/*.ts --fix && tsc --noEmit",
+        "lint": "TIMING=1 eslint --ext .js,.jsx,.ts,.tsx src --ignore-path ../../.gitignore . --fix && tsc --noEmit",
         "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
     },
     "files": [
@@ -28,6 +28,7 @@
         "@types/lodash.mapvalues": "^4.6.6",
         "@types/react": "^17.0.39",
         "eslint": "^7.32.0",
+        "redux": "^4.1.2",
         "scripts": "workspace:*",
         "tsconfig": "workspace:*",
         "tsup": "^5.10.1",

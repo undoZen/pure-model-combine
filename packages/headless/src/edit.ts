@@ -15,10 +15,10 @@ export default function EditInitializer () {
   const edit = setupStore({
     initialState,
     reducers: {
-      disable: produce((state: Draft<EditState>) => {
+      disable: (state: EditState) => produce(state, (state: Draft<EditState>) => {
         state.status = false
       }),
-      enable: produce((state: Draft<EditState>) => {
+      enable: (state: EditState) => produce(state, (state: Draft<EditState>) => {
         state.status = true
       }),
       update: produce((state: Draft<EditState>, content: string) => {
