@@ -1,16 +1,15 @@
-import { adaptReact, createCombine } from '@pure-model-combine/core'
+import { createCombine } from '@pure-model-combine/core'
 import EditInitializer from './edit'
 import TodoFilter, { FilterType } from './filter'
 import HeaderInitializer from './header'
 import TodosInitializer from './todos'
 
-export const { toProvider } = adaptReact([TodosInitializer, TodoFilter])
+export const globalModels = [TodosInitializer, TodoFilter]
 
 export const headerCombine = createCombine({
   todos: TodosInitializer,
   header: HeaderInitializer
 }, (props, models) => {
-  // type State = ReturnType<typeof getState>
   return {
     selectors: {
       headerText: (state) => state.header,
@@ -30,9 +29,8 @@ export const headerCombine = createCombine({
     }
   }
 })
-export const HeaderProvider = headerCombine(toProvider())
 
-const todosCombine = createCombine({
+export const todosCombine = createCombine({
   todo: TodosInitializer,
   filter: TodoFilter
 }, () => ({
@@ -49,14 +47,9 @@ const todosCombine = createCombine({
     }
   },
   actions: {}
-))
+}))
 
-export const TodosProvider = todosCombine(toProvider())
-const f = () => {
-  TodosProvider.useSelected()
-}
-
-const filterCombine = createCombine({
+export const filterCombine = createCombine({
   todos: TodosInitializer,
   filter: TodoFilter
 }, (props, models) => ({
@@ -72,7 +65,6 @@ const filterCombine = createCombine({
     }
   }
 }))
-export const FilterProvider = filterCombine(toProvider())
 
 type TodoProps = {
   id: number
@@ -122,4 +114,3 @@ export const todoCombine = createCombine({
     }
   }
 })
-export const TodoProvider = todoCombine(toProvider())

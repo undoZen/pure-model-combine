@@ -13,6 +13,7 @@ importers:
   apps/react-vite:
     specifiers:
       '@pure-model-combine/core': workspace:*
+      '@pure-model-combine/react': workspace:*
       '@pure-model/core': ^1.2.13
       '@types/react': ^17.0.0
       '@types/react-dom': ^17.0.0
@@ -29,7 +30,8 @@ importers:
       typescript: ^4.6.2
       vite: ^2.8.1
     dependencies:
-      '@pure-model-combine/core': link:../../packages/puremodels
+      '@pure-model-combine/core': link:../../packages/puremodel-combine-core
+      '@pure-model-combine/react': link:../../packages/puremodel-combine-react
       '@pure-model/core': 1.2.13
       headless: link:../../packages/headless
       immer: 9.0.12
@@ -105,7 +107,7 @@ importers:
       tsup: ^5.10.1
       typescript: ^4.6.2
     dependencies:
-      '@pure-model-combine/core': link:../puremodels
+      '@pure-model-combine/core': link:../puremodel-combine-core
       '@pure-model/core': 1.2.13
       fast-equals: 3.0.0
       immer: 9.0.12
@@ -121,7 +123,7 @@ importers:
       tsup: 5.11.13_typescript@4.6.2
       typescript: 4.6.2
 
-  packages/puremodels:
+  packages/legacy-puremodels:
     specifiers:
       '@pure-model/core': ^1.2.13
       '@tsconfig/vite-react': ^1.0.0
@@ -143,6 +145,94 @@ importers:
       typescript: ^4.6.2
       use-subscription: ^1.5.1
     dependencies:
+      '@pure-model/core': 1.2.13
+      '@types/lodash.mapkeys': 4.6.6
+      fast-equals: 3.0.0
+      lodash.mapkeys: 4.6.0
+      lodash.mapvalues: 4.6.0
+      react: 17.0.2
+      react-tracked: 1.7.6_react@17.0.2+scheduler@0.20.2
+      redux: 4.1.2
+      scheduler: 0.20.2
+      use-subscription: 1.5.1_react@17.0.2
+    devDependencies:
+      '@tsconfig/vite-react': 1.0.0
+      '@types/lodash.mapvalues': 4.6.6
+      '@types/react': 17.0.39
+      '@types/use-subscription': 1.0.0
+      eslint: 7.32.0
+      scripts: link:../scripts
+      tsconfig: link:../tsconfig
+      tsup: 5.11.13_typescript@4.6.2
+      typescript: 4.6.2
+
+  packages/puremodel-combine-core:
+    specifiers:
+      '@pure-model/core': ^1.2.13
+      '@tsconfig/vite-react': ^1.0.0
+      '@types/lodash.mapkeys': ^4.6.6
+      '@types/lodash.mapvalues': ^4.6.6
+      '@types/react': ^17.0.39
+      '@types/use-subscription': ^1.0.0
+      eslint: ^7.32.0
+      fast-equals: ^3.0.0
+      lodash.mapkeys: ^4.6.0
+      lodash.mapvalues: ^4.6.0
+      react: ^17.0.2
+      react-tracked: ^1.7.6
+      redux: ^4.1.2
+      scheduler: ^0.20.2
+      scripts: workspace:*
+      tsconfig: workspace:*
+      tsup: ^5.10.1
+      typescript: ^4.6.2
+      use-subscription: ^1.5.1
+    dependencies:
+      '@pure-model/core': 1.2.13
+      '@types/lodash.mapkeys': 4.6.6
+      fast-equals: 3.0.0
+      lodash.mapkeys: 4.6.0
+      lodash.mapvalues: 4.6.0
+      react: 17.0.2
+      react-tracked: 1.7.6_react@17.0.2+scheduler@0.20.2
+      redux: 4.1.2
+      scheduler: 0.20.2
+      use-subscription: 1.5.1_react@17.0.2
+    devDependencies:
+      '@tsconfig/vite-react': 1.0.0
+      '@types/lodash.mapvalues': 4.6.6
+      '@types/react': 17.0.39
+      '@types/use-subscription': 1.0.0
+      eslint: 7.32.0
+      scripts: link:../scripts
+      tsconfig: link:../tsconfig
+      tsup: 5.11.13_typescript@4.6.2
+      typescript: 4.6.2
+
+  packages/puremodel-combine-react:
+    specifiers:
+      '@pure-model-combine/core': workspace:*
+      '@pure-model/core': ^1.2.13
+      '@tsconfig/vite-react': ^1.0.0
+      '@types/lodash.mapkeys': ^4.6.6
+      '@types/lodash.mapvalues': ^4.6.6
+      '@types/react': ^17.0.39
+      '@types/use-subscription': ^1.0.0
+      eslint: ^7.32.0
+      fast-equals: ^3.0.0
+      lodash.mapkeys: ^4.6.0
+      lodash.mapvalues: ^4.6.0
+      react: ^17.0.2
+      react-tracked: ^1.7.6
+      redux: ^4.1.2
+      scheduler: ^0.20.2
+      scripts: workspace:*
+      tsconfig: workspace:*
+      tsup: ^5.10.1
+      typescript: ^4.6.2
+      use-subscription: ^1.5.1
+    dependencies:
+      '@pure-model-combine/core': link:../puremodel-combine-core
       '@pure-model/core': 1.2.13
       '@types/lodash.mapkeys': 4.6.6
       fast-equals: 3.0.0

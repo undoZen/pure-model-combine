@@ -1,4 +1,4 @@
-import { TodoProvider } from 'headless'
+import { TodoProvider } from '../../adapt-headless'
 import { KeyboardEventHandler } from 'react'
 import { CheckIcon } from '../icons/CheckIcon'
 import { CloseIcon } from '../icons/CloseIcon'

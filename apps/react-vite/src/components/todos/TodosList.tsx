@@ -1,4 +1,4 @@
-import { TodosProvider } from 'headless'
+import { TodosProvider } from '../../adapt-headless'
 import TodoItem from './TodoItem'
 
 export const TodosList = () => {

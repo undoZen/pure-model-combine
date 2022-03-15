@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import CaretDownIcon from '../icons/caret-down/CaretDownIcon'
 import CaretDownSelectedIcon from '../icons/caret-down/CaretDownSelectedIcon'
-import { HeaderProvider } from 'headless'
+import { HeaderProvider } from '../../adapt-headless'
 
 export const AddTodo = HeaderProvider.toComponent(({ actions, selected }) => {
   const { toggleAll, addTodo, changeHeaderText } = actions

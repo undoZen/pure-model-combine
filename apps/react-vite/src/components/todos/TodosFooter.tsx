@@ -1,5 +1,5 @@
 import { ButtonFilter } from './ButtonFilter'
-import { FilterProvider } from 'headless'
+import { FilterProvider } from '../../adapt-headless'
 
 export const TodosFooter = FilterProvider.toComponent(({ actions, selected }) => {
   const { leftCount, allCount } = selected

@@ -1,5 +1,5 @@
 import propTypes from 'prop-types'
-import { FilterProvider } from 'headless'
+import { FilterProvider } from '../../adapt-headless'
 
 export const ButtonFilter = ({ name, filterValue }) => {
   const { changeFilter } = FilterProvider.useActions()

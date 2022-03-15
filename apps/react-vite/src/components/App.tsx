@@ -1,5 +1,5 @@
 import '../../styles/App.css'
-import { TodosProvider } from 'headless'
+import { TodosProvider } from '../adapt-headless'
 import { Todos } from './todos'
 
 function App () {

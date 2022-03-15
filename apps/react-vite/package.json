@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@pure-model-combine/core": "workspace:*",
+    "@pure-model-combine/react": "workspace:*",
     "@pure-model/core": "^1.2.13",
     "headless": "workspace:*",
     "immer": "^9.0.12",
