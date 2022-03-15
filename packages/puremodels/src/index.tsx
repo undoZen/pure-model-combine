@@ -385,15 +385,16 @@ type CreatorModels<SS extends IR> = {
   }
 }
 // type CreatorFn<M extends IR> = (props: any, models: InitializerModels<M>, getState: GetState<M>) => any
-type CombineData<M extends IR> = {
+type CombineData<M extends IR, CR extends Creator<M> = NullCR> = {
   models: M
-  creator: Creator<M>
+  creator: CR
 }
-type AnyVisitor<M extends IR> = (combineData: CombineData<M>) => any
-type Combine<M extends IR> = <V extends AnyVisitor<M>>(visitor: V) => ReturnType<V>
+type AnyVisitor<M extends IR, CR extends Creator<M>> = (combineData: CombineData<M, CR>) => any
+type Combine<M extends IR, CR extends Creator<M>> = <V extends AnyVisitor<M, CR>>(visitor: V) => ReturnType<V>
+type NullCR = (props: any, models: any, getState: any) => {selectors: {}, actions: {}}
 type CreateCombine = {
-  <M extends IR>(modelInitializers: M): Combine<M>
-  <M extends IR>(modelInitializers: M, creator: Creator<M>): Combine<M>
+  <M extends IR>(modelInitializers: M): Combine<M, NullCR>
+  <M extends IR, CR extends Creator<M>>(modelInitializers: M, creator: CR): Combine<M, CR>
 }
 export const createCombine: CreateCombine = <M extends IR>(
   modelInitializers: M,
@@ -405,9 +406,10 @@ export const createCombine: CreateCombine = <M extends IR>(
       actions: {}
     })
   }
-  const combineData = {
+  type CR = typeof creator
+  const combineData: CombineData<M, CR> = {
     models: modelInitializers,
     creator: creator as Creator<M>
   } as CombineData<M>
-  return (visitor: AnyVisitor<M>) => visitor(combineData)
+  return (visitor: AnyVisitor<M, CR>) => visitor(combineData)
 }

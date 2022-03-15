@@ -49,9 +49,12 @@ const todosCombine = createCombine({
     }
   },
   actions: {}
-}))
+))
 
 export const TodosProvider = todosCombine(toProvider())
+const f = () => {
+  TodosProvider.useSelected()
+}
 
 const filterCombine = createCombine({
   todos: TodosInitializer,
