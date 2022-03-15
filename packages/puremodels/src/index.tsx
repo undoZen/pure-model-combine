@@ -1,9 +1,10 @@
 import { createPureModel, InitializerState, Model, ModelContextValue, Store } from '@pure-model/core'
 import { shallowEqual } from 'fast-equals'
 import mapValues from 'lodash.mapvalues'
-import { createContext, PropsWithChildren, ReactNode, useContext, useMemo, useRef } from 'react'
+import { createContext, FunctionComponent, PropsWithChildren, ReactNode, useContext, useMemo, useRef } from 'react'
 import { createTrackedSelector } from 'react-tracked'
 import { useSubscription } from 'use-subscription'
+export * from 'redux'
 
 export type ModelState<S extends Model<any>> = S extends Model<infer T> ? T : never
 export type States<SS extends Record<string, Model<any>>> = {
@@ -232,6 +233,15 @@ type CProps<M extends IR> = {
 type CSProps<M extends IR> = CProps<M> & {
   state: InitializerModelState<M>
 }
+type ProviderType<M extends IR, CT extends Creator<M>> = FunctionComponent<PProps<M>&CreatorProps<M, CT>> & {
+  useModels: () => InitializerModels<M>
+  useActions: () => CreatorActions<M, CT>
+  useSelector: () => States<InitializerModels<M>>
+  useSelected: () => {
+    [K in keyof CreatorSelectors<M, CT>]:CreatorSelectors<M, CT>[K] extends (...args: any[]) => infer R ? R : never
+  }
+  toComponent: AnyFn
+}
 export const adaptReact = (
   globalModels: Initializer[] = [],
   preloadedStatesList: any[] = [],
@@ -251,7 +261,7 @@ export const adaptReact = (
       )
     }
     type CT = typeof combineData.creator
-    function Provider ({ children, models: modelsInited, ...props }: PropsWithChildren<PProps<M>&CreatorProps<M, CT>>) {
+    const Provider:ProviderType<M, CT> = ({ children, models: modelsInited, ...props }: PropsWithChildren<PProps<M>&CreatorProps<M, CT>>) => {
       const rmm: number = useMemoShallowEqual(() => Math.random(), modelsInited)
       const modelsRef = useRef(modelsInited)
       const { models } = useMemo(() => {
@@ -353,7 +363,7 @@ type Created<M extends IR> = {
     actions: Actions
   }
 type Creator<M extends IR> = {
-  <P extends {}>(props: P, models: CreatorModels<M>, getState: GetState<M>): Created<M>
+  (props: any, models: CreatorModels<M>, getState: GetState<M>): Created<M>
 }
 type CreatorProps<M extends IR, C> = C extends (props: infer P, models?: InitializerModels<M>, getState?: GetState<M>) => Created<M> ? P : {}
 type CreatorSelectors<M extends IR, C> = C extends (props?: any[], models?: InitializerModels<M>, getState?: GetState<M>) => {

@@ -28,7 +28,6 @@
         "@types/lodash.mapvalues": "^4.6.6",
         "@types/react": "^17.0.39",
         "eslint": "^7.32.0",
-        "redux": "^4.1.2",
         "scripts": "workspace:*",
         "tsconfig": "workspace:*",
         "tsup": "^5.10.1",

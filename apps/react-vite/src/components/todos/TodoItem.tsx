@@ -1,4 +1,5 @@
 import { TodoProvider } from 'headless'
+import { KeyboardEventHandler } from 'react'
 import { CheckIcon } from '../icons/CheckIcon'
 import { CloseIcon } from '../icons/CloseIcon'
 // import styles from 'styles/TodoItem.module.css'
@@ -10,7 +11,7 @@ const TodoItem = TodoProvider.toComponent(({ selected, actions }) => {
   }
   const { remove, toggle, update, startEdit, submit, endEdit } = actions
 
-  const handleKeyUp: React.KeyboardEventHandler = ({ key }) => {
+  const handleKeyUp: KeyboardEventHandler = ({ key }) => {
     console.log('key', key)
     if (key === 'Escape') {
       endEdit()

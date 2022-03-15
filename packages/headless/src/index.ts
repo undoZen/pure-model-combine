@@ -71,10 +71,13 @@ const filterCombine = createCombine({
 }))
 export const FilterProvider = filterCombine(toProvider())
 
+type TodoProps = {
+  id: number
+}
 export const todoCombine = createCombine({
   todos: TodosInitializer,
   edit: EditInitializer
-}, (props: any, models, getState) => {
+}, (props: TodoProps, models, getState) => {
   type State = ReturnType<typeof getState>
   const todo = ({ todos }: State) => todos.find(({ id }) => id === props.id)
   const isEditing = (state: State) => state.edit.status

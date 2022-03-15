@@ -100,7 +100,6 @@ importers:
       immer: ^9.0.12
       lodash.mapvalues: ^4.6.0
       react: ^17.0.2
-      redux: ^4.1.2
       scripts: workspace:*
       tsconfig: workspace:*
       tsup: ^5.10.1
@@ -117,7 +116,6 @@ importers:
       '@types/lodash.mapvalues': 4.6.6
       '@types/react': 17.0.39
       eslint: 7.32.0
-      redux: 4.1.2
       scripts: link:../scripts
       tsconfig: link:../tsconfig
       tsup: 5.11.13_typescript@4.6.2
@@ -137,6 +135,7 @@ importers:
       lodash.mapvalues: ^4.6.0
       react: ^17.0.2
       react-tracked: ^1.7.6
+      redux: ^4.1.2
       scheduler: ^0.20.2
       scripts: workspace:*
       tsconfig: workspace:*
@@ -151,6 +150,7 @@ importers:
       lodash.mapvalues: 4.6.0
       react: 17.0.2
       react-tracked: 1.7.6_react@17.0.2+scheduler@0.20.2
+      redux: 4.1.2
       scheduler: 0.20.2
       use-subscription: 1.5.1_react@17.0.2
     devDependencies:
@@ -532,6 +532,7 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.13.9
+    dev: false
 
   /@babel/template/7.16.7:
     resolution: {integrity: sha512-I8j/x8kHUrbYRTUxXrrMbfCa7jxkE7tZre39x3kjr9hvI82cK1FfqLygotcWN5kdPGWcLdWMHpSBavse5tWw3w==}
@@ -3438,9 +3439,11 @@ packages:
     resolution: {integrity: sha512-SH8PglcebESbd/shgf6mii6EIoRM0zrQyjcuQ+ojmfxjTtE0z9Y8pa62iA/OJ58qjP6j27uyW4kUF4jl/jd6sw==}
     dependencies:
       '@babel/runtime': 7.17.2
+    dev: false
 
   /regenerator-runtime/0.13.9:
     resolution: {integrity: sha512-p3VT+cOEgxFsRRA9X4lkI1E+k2/CtnKtU4gcxyaCUreilL/vqI6CdZ3wxVUx3UOUg+gnUOQQcRI7BmSI656MYA==}
+    dev: false
 
   /regexp.prototype.flags/1.4.1:
     resolution: {integrity: sha512-pMR7hBVUUGI7PMA37m2ofIdQCsomVnas+Jn5UPGAHQ+/LlwKm/aTLJHdasmHRzlfeZwHiAOaRSo2rbBDm3nNUQ==}

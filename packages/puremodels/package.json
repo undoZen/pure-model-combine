@@ -23,6 +23,7 @@
         "lodash.mapvalues": "^4.6.0",
         "react": "^17.0.2",
         "react-tracked": "^1.7.6",
+        "redux": "^4.1.2",
         "scheduler": "^0.20.2",
         "use-subscription": "^1.5.1"
     },
