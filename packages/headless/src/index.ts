@@ -37,13 +37,12 @@ export const todosCombine = createCombine({
   selectors: {
     count: (state) => state.todo.length,
     list: (state) => {
-      if (state.filter === 'all') {
-        return state.todo
-      } else if (state.filter === 'active') {
+      if (state.filter === 'active') {
         return state.todo.filter(todo => !todo.completed)
       } else if (state.filter === 'completed') {
         return state.todo.filter(todo => todo.completed)
       }
+      return state.todo
     }
   },
   actions: {}

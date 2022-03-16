@@ -1,4 +1,4 @@
-import { createHeadlessContainer, getStateFromModels } from '@pure-model-combine/core'
+import { createHeadlessContainer, getStateFromModels, Model, ModelRecord, States, Selectors, Actions, InitializerModelState, CombineData } from '@pure-model-combine/core'
 import { InitializerState, ModelContextValue, Store } from '@pure-model/core'
 import { shallowEqual } from 'fast-equals'
 import { createContext, FunctionComponent, PropsWithChildren, ReactNode, useContext, useMemo, useRef } from 'react'
@@ -6,34 +6,16 @@ import { createTrackedSelector } from 'react-tracked'
 import { useSubscription } from 'use-subscription'
 export * from 'redux'
 
-interface Model<S=any> {
-  store: Store<S>
-}
-export type ModelRecord = Record<string, Model<any>>
-export type ModelState<S extends Model<any>> = S extends Model<infer T> ? T : never
-export type States<SS extends Record<string, Model<any>>> = {
-  [K in keyof SS]: ModelState<SS[K]>
-}
 export type InitializerModel<I extends Initializer<any>> = Model<InitializerState<I>>
 export type InitializerModels<SS extends IR> = {
   [K in keyof SS]: InitializerModel<SS[K]>
 }
-export type InitializerModelState<SS extends IR> = States<InitializerModels<SS>>
-export type Selectors<M extends IR> = Record<string, (state: InitializerModelState<M>) => any>
 type AnyFn = (...args: any[]) => any
-type Actions = Record<string, AnyFn>
 type Initializer<S = any> = (...args: any) => {
     store: Store<S>;
     actions: Actions;
 }
 type IR = Record<string, Initializer>
-type CombineData<M extends IR, P, S, A> = {
-  models: M
-  creator: (props: P, models: CreatorModels<M>, getState: GetState<M>) => {
-    selectors: S
-    actions: A
-  }
-}
 
 type GetState<M extends IR> = () => InitializerModelState<M>
 
@@ -45,7 +27,6 @@ type Created<S, A> = {
   actions: A
 }
 
-type CreatorProps<M extends IR, C> = C extends (props: infer P, models?: InitializerModels<M>, getState?: GetState<M>) => Created<Selectors<M>, Actions> ? P : {}
 type InitializerModelActions<I extends Initializer> = I extends (...args: any[]) => {
   store: Store
   actions: infer P
@@ -57,7 +38,7 @@ type CreatorModels<SS extends IR> = {
   }
 }
 
-export function useModelStates<SS extends ModelRecord> (
+export function useModelsState<SS extends ModelRecord> (
   models: SS
 ): States<SS> {
   const modelsRef = useRef(models)
@@ -67,18 +48,16 @@ export function useModelStates<SS extends ModelRecord> (
   }
   const subsRef = useRef<Subscription>()
   const stateRef = useRef<States<SS>>(getStateFromModels(models))
-  console.log('useModelStates', models)
+  // console.log('useModelsState', models)
   if (!shallowEqual(models, modelsRef.current) || !subsRef.current) {
-    console.log('subscription', models)
+    // console.log('subscription', models)
     modelsRef.current = models
     subsRef.current = {
       getCurrentValue: () => getStateFromModels(models),
       subscribe: (callback: (states: States<SS>) => void) => {
-        console.log('subscribe objk ', Object.keys(models))
         const subscriptions = Object.keys(models).map((key: keyof SS) => {
-          console.log('subscribed', models, key)
           return models[key].store.subscribe(() => {
-            console.log('subscribe called', models, key, models[key].store.getState())
+            // console.log('listener called', models, key, models[key].store.getState())
             stateRef.current = {
               ...stateRef.current,
               [key]: models[key].store.getState()
@@ -87,8 +66,8 @@ export function useModelStates<SS extends ModelRecord> (
           })
         })
         return () => {
-          console.log('unsubscribed', models)
           subscriptions.forEach(unsubscribe => unsubscribe())
+          // console.log('unsubscribed', models)
         }
       }
     }
@@ -107,31 +86,23 @@ const useMemoShallowEqual = (fn: () => any, compare: any) => {
   return fnResultRef.current as ReturnType<typeof fn>
 }
 
-type CProps<M extends IR> = {
+type CProps<M extends IR, S extends Selectors<M>, A extends Actions> = {
   models: InitializerModels<M>
-  selectors: Selectors<M>
-  actions: Actions
+  selectors: S
+  actions: A
 }
-type CSProps<M extends IR> = CProps<M> & {
+type CSProps<M extends IR, S extends Selectors<M>, A extends Actions> = CProps<M, S, A> & {
   state: InitializerModelState<M>
 }
-type CreatorActions<M extends IR, C> = C extends (props?: any[], models?: InitializerModels<M>, getState?: GetState<M>) => {
-    selectors: Selectors<M>
-    actions: infer AA
-} ? AA : {}
-type CreatorSelectors<M extends IR, C> = C extends (props?: any[], models?: InitializerModels<M>, getState?: GetState<M>) => {
-    selectors: infer SS
-    actions: Actions
-} ? SS : {}
 type PProps<M extends IR> = {
   models?: Partial<InitializerModels<M>>
 }
-type ProviderType<M extends IR, CT extends Creator<M>> = FunctionComponent<PProps<M>&CreatorProps<M, CT>> & {
+type ProviderType<M extends IR, P, S extends Selectors<M>, A extends Actions> = FunctionComponent<PProps<M> & P> & {
   useModels: () => InitializerModels<M>
-  useActions: () => CreatorActions<M, CT>
+  useActions: () => A
   useSelector: () => States<InitializerModels<M>>
   useSelected: () => {
-    [K in keyof CreatorSelectors<M, CT>]:CreatorSelectors<M, CT>[K] extends (...args: any[]) => infer R ? R : never
+    [K in keyof S]: ReturnType<S[K]>
   }
   toComponent: AnyFn
 }
@@ -148,23 +119,23 @@ export const adaptReact = (
 ) => {
   const { toHeadless } = createHeadlessContainer(globalModels, preloadedStatesList, context)
 
-  const toProvider = <M extends IR>(combineData: CombineData<M, {}, {}, {}>) => {
+  const toProvider = <M extends IR, P, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
     const { toCombine } = toHeadless(combineData)
-    const ModelsContext = createContext<CSProps<M> | null>(null)
-    function ModelsStatesProvider ({ children, models, selectors, actions }: PropsWithChildren<CProps<M>>) {
-      const state = useModelStates(models)
+    const ModelsContext = createContext<CSProps<M, S, A> | null>(null)
+    function ModelsStatesProvider ({ children, models, selectors, actions }: PropsWithChildren<CProps<M, S, A>>) {
+      const state = useModelsState(models)
       return (
         <ModelsContext.Provider value={{ models, state, selectors, actions }}>
           {children}
         </ModelsContext.Provider>
       )
     }
-    type CT = typeof combineData.creator
-    const Provider:ProviderType<M, CT> = ({ children, models: modelsInited, ...props }: PropsWithChildren<PProps<M>&CreatorProps<M, CT>>) => {
+
+    const Provider:ProviderType<M, P, S, A> = ({ children, models: modelsInited, ...props }: PropsWithChildren<PProps<M> & P>) => {
       const rmm: number = useMemoShallowEqual(() => Math.random(), modelsInited)
       const modelsRef = useRef(modelsInited)
       const { models } = useMemo(() => {
-        const { models } = toCombine(modelsInited ?? {}, props)
+        const { models } = toCombine(modelsInited ?? {}, props as P)
         modelsRef.current = {
           ...modelsRef.current,
           ...models
@@ -173,13 +144,15 @@ export const adaptReact = (
       }, [rmm])
       const rmp: number = useMemoShallowEqual(() => Math.random(), props)
       const { selectors, actions } = useMemo(() => {
-        return toCombine(models, props)
+        return toCombine(models, props as P)
       }, [rmm, rmp])
-      const _props = { models, selectors, actions }
-      return <ModelsStatesProvider {..._props}>{children}</ModelsStatesProvider>
+      // selectors actions 可以随 props 变化，models 一般只需初始化一次，所以分开调用两次 toCombine()
+      return <ModelsStatesProvider models={models} selectors={selectors} actions={actions} >
+        {children}
+      </ModelsStatesProvider>
     }
 
-    const useSelector = (selector: (state: InitializerModelState<M>) => any) => {
+    const useContextModelsState = (selector: (state: InitializerModelState<M>) => any) => {
       const ctx = useContext(ModelsContext)
       if (!ctx) {
         throw new Error('useSelector must be used within a Provider')
@@ -187,16 +160,16 @@ export const adaptReact = (
       const state = ctx.state
       return selector(state)
     }
-    const useTrackedSelector = createTrackedSelector(useSelector)
+    const useSelector = createTrackedSelector(useContextModelsState)
     const useSelected = () => {
-      const state = useTrackedSelector()
-      const selectors = useContext(ModelsContext)!.selectors
+      const state = useSelector()
+      const selectors = useContext(ModelsContext)?.selectors
       return new Proxy(state as any, {
         get (target, key) {
-          const selector = selectors[key as string]
+          const selector = selectors?.[key as string]
           return typeof selector !== 'function' ? null : selector(target)
         }
-      }) as SelectorsReturnType<M, typeof selectors>
+      }) as SelectorsReturnType<M, S>
     }
     const useModels = () => {
       const ctx = useContext(ModelsContext)
@@ -212,7 +185,7 @@ export const adaptReact = (
       }
       return ctx.actions
     }
-    Provider.useSelector = useTrackedSelector
+    Provider.useSelector = useSelector
     Provider.useSelected = useSelected
     Provider.useModels = useModels
     Provider.useActions = useActions
@@ -224,19 +197,20 @@ export const adaptReact = (
         return <Component
           actions={actions}
           selected={selected}
-          useSelector={useTrackedSelector}
+          useSelector={useSelector}
           useModels={useModels}
         >
           {children}
         </Component>
       }
-      function ComponentWrappedWithProvider ({ children, models, ...props }: PropsWithChildren<PProps<M> & CreatorProps<M, CT>>) {
-        return <Provider models={models} {...props}>
+      function ComponentWrappedWithProvider ({ children, ...props }: PropsWithChildren<PProps<M> & P>) {
+        // @ts-ignore
+        return <Provider {...props}>
           <ComponentWrapped {...props}>{children}</ComponentWrapped>
         </Provider>
       }
       ComponentWrappedWithProvider.Provider = Provider
-      ComponentWrappedWithProvider.useSelector = useTrackedSelector
+      ComponentWrappedWithProvider.useSelector = useSelector
       ComponentWrappedWithProvider.useSelected = useSelected
       ComponentWrappedWithProvider.useModels = useModels
       ComponentWrappedWithProvider.useActions = useActions

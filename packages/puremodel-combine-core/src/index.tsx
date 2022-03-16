@@ -2,7 +2,7 @@ import { createPureModel, InitializerState, ModelContextValue, Store } from '@pu
 import mapValues from 'lodash.mapvalues'
 export * from 'redux'
 
-interface Model<S=any> {
+export interface Model<S=any> {
   store: Store<S>
 }
 export type ModelRecord = Record<string, Model<any>>
@@ -17,7 +17,7 @@ export type InitializerModels<SS extends IR> = {
 export type InitializerModelState<SS extends IR> = States<InitializerModels<SS>>
 export type Selectors<M extends IR> = Record<string, (state: InitializerModelState<M>) => any>
 type AnyFn = (...args: any[]) => any
-type Actions = Record<string, AnyFn>
+export type Actions = Record<string, AnyFn>
 type Initializer<S = any> = (...args: any) => {
     store: Store<S>;
     actions: Actions;
@@ -27,7 +27,7 @@ type CreateCombine = {
   <M extends IR>(modelInitializers: M): CombineData<M, {}, {}, {}>
   <M extends IR, S extends Selectors<M>, A extends Actions>(modelInitializers: M, creator: Creator<M, S, A>): CombineData<M, CreatorProps<M, typeof creator>, S, A>
 }
-type CombineData<M extends IR, P, S, A> = {
+export type CombineData<M extends IR, P, S, A> = {
   models: M
   creator: (props: P, models: CreatorModels<M>, getState: GetState<M>) => {
     selectors: S
@@ -111,6 +111,21 @@ export function getStateFromModels<SS extends ModelRecord> (models: SS): States<
     return acc
   }, {} as States<SS>)
 }
+
+export function subscribeModels<SS extends ModelRecord> (models: SS, listener: (models: States<SS>) => void) {
+  const cachedState = getStateFromModels(models)
+  const subscriptions = Object.keys(models).map((key: keyof SS) => {
+    return models[key].store.subscribe(() => {
+      listener({
+        ...cachedState,
+        [key]: models[key].store.getState()
+      })
+    })
+  })
+  return () => {
+    subscriptions.forEach(unsubscribe => unsubscribe())
+  }
+}
 export const createHeadlessContainer = (
   globalModels: Initializer[] = [],
   preloadedStatesList: any[] = [],
@@ -134,7 +149,12 @@ export const createHeadlessContainer = (
           })
         }) as InitializerModels<M>
         const { selectors, actions } = combineData.creator(props, models as unknown as CreatorModels<M>, (): InitializerModelState<M> => getStateFromModels(models))
+        const subscribe = (listener: (state: InitializerModelState<M>) => void) =>
+          subscribeModels(models, listener)
+        const getState = () => getStateFromModels(models)
         return {
+          subscribe,
+          getState,
           models,
           selectors,
           actions
