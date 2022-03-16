@@ -4,17 +4,22 @@ import TodoFilter, { FilterType } from './filter'
 import HeaderInitializer from './header'
 import TodosInitializer from './todos'
 
+export type { FilterType }
+
 export const globalModels = [TodosInitializer, TodoFilter]
 
 export const headerCombine = createCombine({
   todos: TodosInitializer,
   header: HeaderInitializer
-}, (props, models) => {
+}, (props, models, getState) => {
+  type State = ReturnType<typeof getState>
+  const headerText = (state: State) => state.header
   return {
     selectors: {
-      headerText: (state) => state.header,
+      headerText,
       todos: (state) => state.todos,
-      isAllCompleted: ({ todos }) => todos.every(({ completed }) => completed)
+      isAllCompleted: ({ todos }) => todos.every(({ completed }) => completed),
+      isEmpty: ({ todos }) => !todos.length
     },
     actions: {
       toggleAll: () => models.todos.actions.toggleAll(),
@@ -22,7 +27,7 @@ export const headerCombine = createCombine({
         return models.header.actions.setHeaderText(text)
       },
       addTodo: () => {
-        const text = models.header.store.getState()
+        const text = headerText(getState())
         models.todos.actions.addTodo(text)
         models.header.actions.setHeaderText('')
       }

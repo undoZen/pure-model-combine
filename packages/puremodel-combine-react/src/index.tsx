@@ -1,42 +1,12 @@
-import { createHeadlessContainer, getStateFromModels, Model, ModelRecord, States, Selectors, Actions, InitializerModelState, CombineData } from '@pure-model-combine/core'
-import { InitializerState, ModelContextValue, Store } from '@pure-model/core'
+import { Actions, CombineData, createHeadlessContainer, getStateFromModels, Initializer, InitializerModels, InitializerModelState, ModelRecord, Selectors, States } from '@pure-model-combine/core'
+import { ModelContextValue } from '@pure-model/core'
 import { shallowEqual } from 'fast-equals'
-import { createContext, FunctionComponent, PropsWithChildren, ReactNode, useContext, useMemo, useRef } from 'react'
+import { ComponentType, createContext, FunctionComponent, PropsWithChildren, useContext, useMemo, useRef } from 'react'
 import { createTrackedSelector } from 'react-tracked'
 import { useSubscription } from 'use-subscription'
 export * from 'redux'
 
-export type InitializerModel<I extends Initializer<any>> = Model<InitializerState<I>>
-export type InitializerModels<SS extends IR> = {
-  [K in keyof SS]: InitializerModel<SS[K]>
-}
-type AnyFn = (...args: any[]) => any
-type Initializer<S = any> = (...args: any) => {
-    store: Store<S>;
-    actions: Actions;
-}
 type IR = Record<string, Initializer>
-
-type GetState<M extends IR> = () => InitializerModelState<M>
-
-export type Creator<M extends IR, S extends Selectors<M> = Selectors<M>, A extends Actions = Actions> =
-  (props: any, models: CreatorModels<M>, getState: GetState<M>) => Created<S, A>
-
-type Created<S, A> = {
-  selectors: S
-  actions: A
-}
-
-type InitializerModelActions<I extends Initializer> = I extends (...args: any[]) => {
-  store: Store
-  actions: infer P
-} ? P : never
-type CreatorModels<SS extends IR> = {
-  [K in keyof SS]: {
-    store: InitializerModel<SS[K]>['store']
-    actions: InitializerModelActions<SS[K]>
-  }
-}
 
 export function useModelsState<SS extends ModelRecord> (
   models: SS
@@ -86,26 +56,40 @@ const useMemoShallowEqual = (fn: () => any, compare: any) => {
   return fnResultRef.current as ReturnType<typeof fn>
 }
 
-type CProps<M extends IR, S extends Selectors<M>, A extends Actions> = {
+type ModelProviderProps<M extends IR, S extends Selectors<M>, A extends Actions> = {
   models: InitializerModels<M>
   selectors: S
   actions: A
 }
-type CSProps<M extends IR, S extends Selectors<M>, A extends Actions> = CProps<M, S, A> & {
+type ModelContextProviderProps<M extends IR, S extends Selectors<M>, A extends Actions> = ModelProviderProps<M, S, A> & {
   state: InitializerModelState<M>
 }
-type PProps<M extends IR> = {
+type ProviderProps<M extends IR> = {
   models?: Partial<InitializerModels<M>>
 }
-type ProviderType<M extends IR, P, S extends Selectors<M>, A extends Actions> = FunctionComponent<PProps<M> & P> & {
+type Helplers<M extends IR, S extends Selectors<M>, A extends Actions> = {
   useModels: () => InitializerModels<M>
   useActions: () => A
   useSelector: () => States<InitializerModels<M>>
   useSelected: () => {
     [K in keyof S]: ReturnType<S[K]>
   }
-  toComponent: AnyFn
 }
+type ComponentProps<M extends IR, S extends Selectors<M>, A extends Actions> = {
+  useModels: () => InitializerModels<M>
+  useSelector: () => States<InitializerModels<M>>
+  selected: SelectorsReturnType<M, S>
+  actions: A
+}
+type ComponentHOC<M extends IR, P, S extends Selectors<M>, A extends Actions> = {
+  (component: ComponentType<ComponentProps<M, S, A> & P>):
+    FunctionComponent<ProviderProps<M> & P> & Helplers<M, S, A> & { Provider: ProviderType<M, P, S, A>}
+}
+type ProviderType<M extends IR, P, S extends Selectors<M>, A extends Actions> =
+  FunctionComponent<ProviderProps<M> & P> &
+  Helplers<M, S, A> & {
+    toComponent: ComponentHOC<M, P, S, A>
+  }
 type Selector<M extends IR, Selected extends any = InitializerModelState<M>> = (state: InitializerModelState<M>) => Selected
 type SelectorReturn<M extends IR, S extends Selector<M>> = ReturnType<S>
 type SelectorsReturnType<M extends IR, SS extends Selectors<M>> = {
@@ -121,8 +105,8 @@ export const adaptReact = (
 
   const toProvider = <M extends IR, P, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
     const { toCombine } = toHeadless(combineData)
-    const ModelsContext = createContext<CSProps<M, S, A> | null>(null)
-    function ModelsStatesProvider ({ children, models, selectors, actions }: PropsWithChildren<CProps<M, S, A>>) {
+    const ModelsContext = createContext<ModelContextProviderProps<M, S, A> | null>(null)
+    function ModelsStatesProvider ({ children, models, selectors, actions }: PropsWithChildren<ModelProviderProps<M, S, A>>) {
       const state = useModelsState(models)
       return (
         <ModelsContext.Provider value={{ models, state, selectors, actions }}>
@@ -131,7 +115,7 @@ export const adaptReact = (
       )
     }
 
-    const Provider:ProviderType<M, P, S, A> = ({ children, models: modelsInited, ...props }: PropsWithChildren<PProps<M> & P>) => {
+    const Provider:ProviderType<M, P, S, A> = ({ children, models: modelsInited, ...props }: PropsWithChildren<ProviderProps<M> & P>) => {
       const rmm: number = useMemoShallowEqual(() => Math.random(), modelsInited)
       const modelsRef = useRef(modelsInited)
       const { models } = useMemo(() => {
@@ -190,23 +174,23 @@ export const adaptReact = (
     Provider.useModels = useModels
     Provider.useActions = useActions
 
-    function toComponent (Component: any) {
-      const ComponentWrapped = ({ children }: { children: ReactNode }) => {
+    const toComponent: ComponentHOC<M, P, S, A> = (Component) => {
+      const ComponentWrapped = ({ children, ...props }: PropsWithChildren<P>) => {
         const actions = useActions()
         const selected = useSelected()
+        const _props = props as unknown as P
         return <Component
           actions={actions}
           selected={selected}
           useSelector={useSelector}
           useModels={useModels}
-        >
-          {children}
-        </Component>
+          {..._props}
+        />
       }
-      function ComponentWrappedWithProvider ({ children, ...props }: PropsWithChildren<PProps<M> & P>) {
-        // @ts-ignore
-        return <Provider {...props}>
-          <ComponentWrapped {...props}>{children}</ComponentWrapped>
+      const ComponentWrappedWithProvider = ({ children, ...props }: PropsWithChildren<ProviderProps<M> & P>) => {
+        const _props = props as unknown as ProviderProps<M> & P
+        return <Provider {..._props}>
+          <ComponentWrapped {..._props}>{children}</ComponentWrapped>
         </Provider>
       }
       ComponentWrappedWithProvider.Provider = Provider

@@ -18,14 +18,14 @@ export type InitializerModelState<SS extends IR> = States<InitializerModels<SS>>
 export type Selectors<M extends IR> = Record<string, (state: InitializerModelState<M>) => any>
 type AnyFn = (...args: any[]) => any
 export type Actions = Record<string, AnyFn>
-type Initializer<S = any> = (...args: any) => {
+export type Initializer<S = any> = (...args: any) => {
     store: Store<S>;
     actions: Actions;
 }
 type IR = Record<string, Initializer>
 type CreateCombine = {
   <M extends IR>(modelInitializers: M): CombineData<M, {}, {}, {}>
-  <M extends IR, S extends Selectors<M>, A extends Actions>(modelInitializers: M, creator: Creator<M, S, A>): CombineData<M, CreatorProps<M, typeof creator>, S, A>
+  <M extends IR, S extends Selectors<M>, A extends Actions, P = any>(modelInitializers: M, creator: Creator<M, S, A, P>): CombineData<M, P, S, A>
 }
 export type CombineData<M extends IR, P, S, A> = {
   models: M
@@ -37,15 +37,15 @@ export type CombineData<M extends IR, P, S, A> = {
 
 type GetState<M extends IR> = () => InitializerModelState<M>
 
-export type Creator<M extends IR, S extends Selectors<M> = Selectors<M>, A extends Actions = Actions> =
-  (props: any, models: CreatorModels<M>, getState: GetState<M>) => Created<S, A>
+export type Creator<M extends IR, S extends Selectors<M> = Selectors<M>, A extends Actions = Actions, P = any> =
+  (props: P, models: CreatorModels<M>, getState: GetState<M>) => Created<S, A>
 
 type Created<S, A> = {
   selectors: S
   actions: A
 }
 
-type CreatorProps<M extends IR, C> = C extends (props: infer P, models?: InitializerModels<M>, getState?: GetState<M>) => Created<Selectors<M>, Actions> ? P : {}
+// type CreatorProps<M extends IR, C> = C extends Creator<M, Selectors<M>, Actions, infer P> ? P : {}
 type InitializerModelActions<I extends Initializer> = I extends (...args: any[]) => {
   store: Store
   actions: infer P
@@ -77,11 +77,7 @@ export const createCombine: CreateCombine = <M extends IR>(
   }
 }
 
-function createCache (
-  globalModels: Initializer[] = [],
-  preloadedStatesList: any[] = [],
-  context?: ModelContextValue
-) {
+function createCache (globalModels: Initializer[] = [], preloadedStatesList: any[] = [], context?: ModelContextValue) {
   const deps = new Map<Initializer, Model>()
   return function getCachedDep<I extends Initializer<any>> (initializer: I) {
     if (!globalModels.includes(initializer)) {

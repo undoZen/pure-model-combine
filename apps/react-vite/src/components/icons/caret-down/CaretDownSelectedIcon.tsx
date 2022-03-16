@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo } from 'react'
 
 const CaretDownSelectedIcon = () => {
   return (
@@ -18,4 +18,4 @@ const CaretDownSelectedIcon = () => {
   )
 }
 
-export default React.memo(CaretDownSelectedIcon)
+export default memo(CaretDownSelectedIcon)

@@ -1,24 +1,24 @@
 import { TodoProvider } from '../../adapt-headless'
 import { KeyboardEventHandler } from 'react'
-import { CheckIcon } from '../icons/CheckIcon'
-import { CloseIcon } from '../icons/CloseIcon'
+import CheckIcon from '../icons/CheckIcon'
+import CloseIcon from '../icons/CloseIcon'
 // import styles from 'styles/TodoItem.module.css'
 
 const TodoItem = TodoProvider.toComponent(({ selected, actions }) => {
   const { todo, isEditing, editingValue } = selected
   if (!todo) {
-    return
+    return null
   }
   const { remove, toggle, update, startEdit, submit, endEdit } = actions
 
-  const handleKeyUp: KeyboardEventHandler = ({ key }) => {
+  const handleKeyUp: KeyboardEventHandler<HTMLInputElement> = ({ key }) => {
     console.log('key', key)
     if (key === 'Escape') {
       endEdit()
-      return
+      return null
     }
     if (key !== 'Enter') {
-      return
+      return null
     }
     submit()
   }
@@ -44,9 +44,7 @@ const TodoItem = TodoProvider.toComponent(({ selected, actions }) => {
           {todo.content}
         </label>
         <button onClick={remove} className="w-8 text-red-700 opacity-0 group-hover:opacity-100">
-          <span className='material-icons'>
-            clear
-          </span>
+          <CloseIcon />
         </button>
       </div>
       {isEditing && <div className="flex flex-row" >
