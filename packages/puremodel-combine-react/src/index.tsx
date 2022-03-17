@@ -82,11 +82,11 @@ type ComponentProps<M extends IR, S extends Selectors<M>, A extends Actions> = {
   actions: A
 }
 type ComponentHOC<M extends IR, P, S extends Selectors<M>, A extends Actions> = {
-  (component: ComponentType<ComponentProps<M, S, A> & Omit<P, 'children'>>):
+  (component: ComponentType<ComponentProps<M, S, A> & P>):
     FunctionComponent<ProviderProps<M> & P> & Helplers<M, S, A> & { Provider: ProviderType<M, P, S, A>}
 }
 type ProviderType<M extends IR, P, S extends Selectors<M>, A extends Actions> =
-  FunctionComponent<ProviderProps<M> & Omit<P, 'children'>> &
+  FunctionComponent<ProviderProps<M> & P> &
   Helplers<M, S, A> & {
     toComponent: ComponentHOC<M, P, S, A>
   }
@@ -103,7 +103,7 @@ export const adaptReact = (
 ) => {
   const { toHeadless } = createHeadlessContainer(globalModels, preloadedStatesList, context)
 
-  const toProvider = <M extends IR, P, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
+  const toProvider = <M extends IR, P extends object, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
     const { toCombine } = toHeadless(combineData)
     const ModelsContext = createContext<ModelContextProviderProps<M, S, A> | null>(null)
     function ModelsStatesProvider ({ children, models, selectors, actions }: PropsWithChildren<ModelProviderProps<M, S, A>>) {
@@ -115,7 +115,7 @@ export const adaptReact = (
       )
     }
 
-    const Provider:ProviderType<M, P, S, A> = ({ children, models: modelsInited, ...props }) => {
+    const Provider:ProviderType<M, P, S, A> = ({ children, models: modelsInited, ...props }: PropsWithChildren<ProviderProps<M> & P>) => {
       const rmm: number = useMemoShallowEqual(() => Math.random(), modelsInited)
       const modelsRef = useRef(modelsInited)
       const { models } = useMemo(() => {
@@ -175,7 +175,7 @@ export const adaptReact = (
     Provider.useActions = useActions
 
     const toComponent: ComponentHOC<M, P, S, A> = (Component) => {
-      const ComponentWrapped = ({ children, ...props }: PropsWithChildren<P>) => {
+      const ComponentWrapped = (props: PropsWithChildren<P>) => {
         const actions = useActions()
         const selected = useSelected()
         return <Component
@@ -188,7 +188,7 @@ export const adaptReact = (
       }
       const ComponentWrappedWithProvider = (props: PropsWithChildren<ProviderProps<M> & P>) => {
         const { children, ...rest } = props
-        return <Provider {...rest}>
+        return <Provider {...(rest as ProviderProps<M> & P)}>
           <ComponentWrapped {...props} />
         </Provider>
       }

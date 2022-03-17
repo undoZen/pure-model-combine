@@ -25,9 +25,9 @@ export type Initializer<S = any> = (...args: any) => {
 type IR = Record<string, Initializer>
 type CreateCombine = {
   <M extends IR>(modelInitializers: M): CombineData<M, {}, {}, {}>
-  <M extends IR, S extends Selectors<M>, A extends Actions, P = any>(modelInitializers: M, creator: Creator<M, S, A, P>): CombineData<M, P, S, A>
+  <M extends IR, S extends Selectors<M>, A extends Actions, P extends object = {}>(modelInitializers: M, creator: Creator<M, S, A, P>): CombineData<M, P, S, A>
 }
-export type CombineData<M extends IR, P, S, A> = {
+export type CombineData<M extends IR, P extends object, S, A> = {
   models: M
   creator: (props: P, models: CreatorModels<M>, getState: GetState<M>) => {
     selectors: S
@@ -128,7 +128,7 @@ export const createHeadlessContainer = (
   context?: ModelContextValue
 ) => {
   const getCachedDep = createCache(globalModels, preloadedStatesList, context)
-  const toHeadless = <M extends IR, P, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
+  const toHeadless = <M extends IR, P extends object, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
     return {
       toCombine: (modelsInited: Partial<InitializerModels<M>> = {}, props: P) => {
         const models = mapValues(combineData.models, (initializer, name) => {
