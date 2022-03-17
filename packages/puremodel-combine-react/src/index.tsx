@@ -82,11 +82,11 @@ type ComponentProps<M extends IR, S extends Selectors<M>, A extends Actions> = {
   actions: A
 }
 type ComponentHOC<M extends IR, P, S extends Selectors<M>, A extends Actions> = {
-  (component: ComponentType<ComponentProps<M, S, A> & P>):
+  (component: ComponentType<ComponentProps<M, S, A> & Omit<P,'children'>>):
     FunctionComponent<ProviderProps<M> & P> & Helplers<M, S, A> & { Provider: ProviderType<M, P, S, A>}
 }
 type ProviderType<M extends IR, P, S extends Selectors<M>, A extends Actions> =
-  FunctionComponent<ProviderProps<M> & P> &
+  FunctionComponent<ProviderProps<M> & Omit<P,'children'>> &
   Helplers<M, S, A> & {
     toComponent: ComponentHOC<M, P, S, A>
   }
@@ -115,7 +115,7 @@ export const adaptReact = (
       )
     }
 
-    const Provider:ProviderType<M, P, S, A> = ({ children, models: modelsInited, ...props }: PropsWithChildren<ProviderProps<M> & P>) => {
+    const Provider:ProviderType<M, P, S, A> = ({ children, models: modelsInited, ...props }) => {
       const rmm: number = useMemoShallowEqual(() => Math.random(), modelsInited)
       const modelsRef = useRef(modelsInited)
       const { models } = useMemo(() => {
@@ -178,19 +178,18 @@ export const adaptReact = (
       const ComponentWrapped = ({ children, ...props }: PropsWithChildren<P>) => {
         const actions = useActions()
         const selected = useSelected()
-        const _props = props as unknown as P
         return <Component
           actions={actions}
           selected={selected}
           useSelector={useSelector}
           useModels={useModels}
-          {..._props}
+          {...props}
         />
       }
-      const ComponentWrappedWithProvider = ({ children, ...props }: PropsWithChildren<ProviderProps<M> & P>) => {
-        const _props = props as unknown as ProviderProps<M> & P
-        return <Provider {..._props}>
-          <ComponentWrapped {..._props}>{children}</ComponentWrapped>
+      const ComponentWrappedWithProvider = (props: PropsWithChildren<ProviderProps<M> & P>) => {
+        const { children, ...rest } = props
+        return <Provider {...rest}>
+          <ComponentWrapped {...props} />
         </Provider>
       }
       ComponentWrappedWithProvider.Provider = Provider
