@@ -82,11 +82,11 @@ type ComponentProps<M extends IR, S extends Selectors<M>, A extends Actions> = {
   actions: A
 }
 type ComponentHOC<M extends IR, P, S extends Selectors<M>, A extends Actions> = {
-  (component: ComponentType<ComponentProps<M, S, A> & Omit<P,'children'>>):
+  (component: ComponentType<ComponentProps<M, S, A> & Omit<P, 'children'>>):
     FunctionComponent<ProviderProps<M> & P> & Helplers<M, S, A> & { Provider: ProviderType<M, P, S, A>}
 }
 type ProviderType<M extends IR, P, S extends Selectors<M>, A extends Actions> =
-  FunctionComponent<ProviderProps<M> & Omit<P,'children'>> &
+  FunctionComponent<ProviderProps<M> & Omit<P, 'children'>> &
   Helplers<M, S, A> & {
     toComponent: ComponentHOC<M, P, S, A>
   }
