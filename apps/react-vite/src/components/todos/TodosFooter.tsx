@@ -1,7 +1,7 @@
 import { ButtonFilter } from './ButtonFilter'
 import { FilterContainer } from '../../adapt-headless'
 
-export const TodosFooter = FilterContainer.toComponent(({ actions, selected }) => {
+export const TodosFooter = FilterContainer.toWrappedComponent(({ actions, selected }) => {
   const { leftCount, allCount } = selected
   const { clearCompleted } = actions
   console.log({ leftCount, allCount })

@@ -2,19 +2,6 @@ import '../../styles/App.css'
 import { TodosContainer } from '../adapt-headless'
 import { Todos } from './todos'
 
-function App () {
-  return (
-    <div className='app w-11/12 md:w-8/12 lg:w-6/12 mx-auto max-w-prose text-center mt-[-7px]'>
-      <p className='app__title font-thin text-[100px]'>todos</p>
-
-      <TodosContainer>
-        <Todos />
-      </TodosContainer>
-
-      <Footer />
-    </div>
-  )
-}
 function Footer () {
   return (
     <div className='text-[#bfbfbf] text-xs mt-14 leading-loose'>
@@ -50,3 +37,17 @@ function Footer () {
 }
 
 export default App
+
+function App () {
+  return (
+    <div className='app w-11/12 md:w-8/12 lg:w-6/12 mx-auto max-w-prose text-center mt-[-7px]'>
+      <p className='app__title font-thin text-[100px]'>todos</p>
+
+      <TodosContainer.Provider>
+        <Todos />
+      </TodosContainer.Provider>
+
+      <Footer />
+    </div>
+  )
+}

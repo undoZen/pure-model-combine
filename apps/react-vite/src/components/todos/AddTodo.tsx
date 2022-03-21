@@ -2,7 +2,7 @@ import { HeaderContainer } from '../../adapt-headless'
 import CaretDownIcon from '../icons/caret-down/CaretDownIcon'
 import CaretDownSelectedIcon from '../icons/caret-down/CaretDownSelectedIcon'
 
-export const AddTodo = HeaderContainer.toComponent(({ actions, selected }) => {
+export const AddTodo = HeaderContainer.toWrappedComponent(({ actions, selected }) => {
   const { toggleAll, addTodo, changeHeaderText } = actions
   const { headerText, isAllCompleted, isEmpty } = selected
 

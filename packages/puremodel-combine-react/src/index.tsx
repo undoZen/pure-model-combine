@@ -83,13 +83,17 @@ type ComponentProps<M extends IR, S extends Selectors<M>, A extends Actions> = {
 }
 type ComponentHOC<M extends IR, P, S extends Selectors<M>, A extends Actions> = {
   (component: ComponentType<ComponentProps<M, S, A> & P>):
-    FunctionComponent<ProviderProps<M> & P> & Helplers<M, S, A> & { Provider: ProviderType<M, P, S, A>}
+    FunctionComponent<ProviderProps<M> & P>
 }
-type ProviderType<M extends IR, P, S extends Selectors<M>, A extends Actions> =
-  FunctionComponent<ProviderProps<M> & P> &
-  Helplers<M, S, A> & {
+type ProviderType<M extends IR, P> =
+  FunctionComponent<ProviderProps<M> & P>
+type ContainerType<M extends IR, P, S extends Selectors<M>, A extends Actions> =
+  Helplers<M, S, A>
+  & {
+    toWrappedComponent: ComponentHOC<M, P, S, A>
     toComponent: ComponentHOC<M, P, S, A>
   }
+  & { Provider: ProviderType<M, P>}
 type Selector<M extends IR, Selected extends any = InitializerModelState<M>> = (state: InitializerModelState<M>) => Selected
 type SelectorReturn<M extends IR, S extends Selector<M>> = ReturnType<S>
 type SelectorsReturnType<M extends IR, SS extends Selectors<M>> = {
@@ -115,7 +119,7 @@ export const adaptReact = (
       )
     }
 
-    const Provider:ProviderType<M, P, S, A> = ({ children, models: modelsInited, ...props }: PropsWithChildren<ProviderProps<M> & P>) => {
+    const Provider:ProviderType<M, P> = ({ children, models: modelsInited, ...props }: PropsWithChildren<ProviderProps<M> & P>) => {
       const rmm: number = useMemoShallowEqual(() => Math.random(), modelsInited)
       const modelsRef = useRef(modelsInited)
       const { models } = useMemo(() => {
@@ -169,13 +173,9 @@ export const adaptReact = (
       }
       return ctx.actions
     }
-    Provider.useSelector = useSelector
-    Provider.useSelected = useSelected
-    Provider.useModels = useModels
-    Provider.useActions = useActions
 
     const toComponent: ComponentHOC<M, P, S, A> = (Component) => {
-      const ComponentWrapped = (props: PropsWithChildren<P>) => {
+      const ComponentWithHelpers = (props: PropsWithChildren<P>) => {
         const actions = useActions()
         const selected = useSelected()
         return <Component
@@ -186,22 +186,29 @@ export const adaptReact = (
           {...props}
         />
       }
+      return ComponentWithHelpers
+    }
+
+    const toWrappedComponent: ComponentHOC<M, P, S, A> = (Component) => {
+      const ComponentWithHelpers = toComponent(Component)
       const ComponentWrappedWithProvider = (props: PropsWithChildren<ProviderProps<M> & P>) => {
         const { children, ...rest } = props
         return <Provider {...(rest as ProviderProps<M> & P)}>
-          <ComponentWrapped {...props} />
+          <ComponentWithHelpers {...props} />
         </Provider>
       }
-      ComponentWrappedWithProvider.Provider = Provider
-      ComponentWrappedWithProvider.useSelector = useSelector
-      ComponentWrappedWithProvider.useSelected = useSelected
-      ComponentWrappedWithProvider.useModels = useModels
-      ComponentWrappedWithProvider.useActions = useActions
       return ComponentWrappedWithProvider
     }
-    Provider.toComponent = toComponent
 
-    return Provider
+    return {
+      Provider,
+      toComponent,
+      toWrappedComponent,
+      useSelector,
+      useSelected,
+      useModels,
+      useActions
+    } as ContainerType<M, P, S, A>
   }
   return { createReactContainer }
 }

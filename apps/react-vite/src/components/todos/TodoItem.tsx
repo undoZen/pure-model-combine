@@ -4,7 +4,7 @@ import CheckIcon from '../icons/CheckIcon'
 import CloseIcon from '../icons/CloseIcon'
 // import styles from 'styles/TodoItem.module.css'
 
-const TodoItem = TodoContainer.toComponent(({ selected, actions }) => {
+const TodoItem = TodoContainer.toWrappedComponent(({ selected, actions }) => {
   const { todo, isEditing, editingValue } = selected
   if (!todo) {
     return null
