@@ -1,9 +1,9 @@
 import { FilterType } from 'headless'
-import { FilterProvider } from '../../adapt-headless'
+import { FilterContainer } from '../../adapt-headless'
 
 export const ButtonFilter = ({ name, filterValue }: { name:string, filterValue: FilterType }) => {
-  const { changeFilter } = FilterProvider.useActions()
-  const { selectedType } = FilterProvider.useSelected()
+  const { changeFilter } = FilterContainer.useActions()
+  const { selectedType } = FilterContainer.useSelected()
   console.log({ selectedType })
   const handleTodoFilter = () => changeFilter(filterValue)
 

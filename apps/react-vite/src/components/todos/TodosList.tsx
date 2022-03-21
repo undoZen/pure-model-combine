@@ -1,8 +1,8 @@
-import { TodosProvider } from '../../adapt-headless'
+import { TodosContainer } from '../../adapt-headless'
 import TodoItem from './TodoItem'
 
 export const TodosList = () => {
-  const { list } = TodosProvider.useSelected()
+  const { list } = TodosContainer.useSelected()
 
   if (!list.length) return <></>
 

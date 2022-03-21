@@ -1,10 +1,10 @@
-import { TodoProvider } from '../../adapt-headless'
+import { TodoContainer } from '../../adapt-headless'
 import { KeyboardEventHandler } from 'react'
 import CheckIcon from '../icons/CheckIcon'
 import CloseIcon from '../icons/CloseIcon'
 // import styles from 'styles/TodoItem.module.css'
 
-const TodoItem = TodoProvider.toComponent(({ selected, actions }) => {
+const TodoItem = TodoContainer.toComponent(({ selected, actions }) => {
   const { todo, isEditing, editingValue } = selected
   if (!todo) {
     return null

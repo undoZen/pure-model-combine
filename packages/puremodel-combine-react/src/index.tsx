@@ -103,7 +103,7 @@ export const adaptReact = (
 ) => {
   const { toHeadless } = createHeadlessContainer(globalModels, preloadedStatesList, context)
 
-  const toProvider = <M extends IR, P extends object, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
+  const createReactContainer = <M extends IR, P extends object, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
     const { toCombine } = toHeadless(combineData)
     const ModelsContext = createContext<ModelContextProviderProps<M, S, A> | null>(null)
     function ModelsStatesProvider ({ children, models, selectors, actions }: PropsWithChildren<ModelProviderProps<M, S, A>>) {
@@ -203,5 +203,5 @@ export const adaptReact = (
 
     return Provider
   }
-  return { toProvider }
+  return { createReactContainer }
 }
