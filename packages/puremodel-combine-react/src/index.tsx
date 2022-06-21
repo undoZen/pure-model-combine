@@ -1,4 +1,4 @@
-import { Actions, CombineData, createHeadlessContainer, getStateFromModels, Initializer, InitializerModels, InitializerModelState, ModelRecord, Selectors, States } from '@pure-model-combine/core'
+import { Actions, adaptHeadless, CombineData, getStateFromModels, Initializer, InitializerModels, InitializerModelState, ModelRecord, Selectors, States } from '@pure-model-combine/core'
 import { ModelContextValue } from '@pure-model/core'
 import { shallowEqual } from 'fast-equals'
 import { ComponentType, createContext, FunctionComponent, PropsWithChildren, useContext, useMemo, useRef } from 'react'
@@ -105,10 +105,10 @@ export const adaptReact = (
   preloadedStatesList: any[] = [],
   context?: ModelContextValue
 ) => {
-  const { toHeadless } = createHeadlessContainer(globalModels, preloadedStatesList, context)
+  const { createHeadlessContainer } = adaptHeadless(globalModels, preloadedStatesList, context)
 
   const createReactContainer = <M extends IR, P extends object, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
-    const { toCombine } = toHeadless(combineData)
+    const { toCombine } = createHeadlessContainer(combineData)
     const ModelsContext = createContext<ModelContextProviderProps<M, S, A> | null>(null)
     function ModelsStatesProvider ({ children, models, selectors, actions }: PropsWithChildren<ModelProviderProps<M, S, A>>) {
       const state = useModelsState(models)
