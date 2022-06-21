@@ -155,7 +155,7 @@ export const adaptReact = (
       return new Proxy(state as any, {
         get (target, key) {
           const selector = selectors?.[key as string]
-          return typeof selector !== 'function' ? null : selector(target)
+          return typeof selector !== 'function' ? undefined : selector(target)
         }
       }) as SelectorsReturnType<M, S>
     }
