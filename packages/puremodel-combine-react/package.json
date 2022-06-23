@@ -16,27 +16,27 @@
         "dist"
     ],
     "dependencies": {
-        "@pure-model/core": "^1.2.13",
         "@pure-model-combine/core": "workspace:*",
-        "@types/lodash.mapkeys": "^4.6.6",
-        "fast-equals": "^3.0.0",
+        "@pure-model/core": "^1.2.13",
+        "@types/lodash.mapkeys": "^4.6.7",
+        "fast-equals": "^3.0.3",
         "lodash.mapkeys": "^4.6.0",
         "lodash.mapvalues": "^4.6.0",
         "react": "^17.0.2",
-        "react-tracked": "^1.7.6",
-        "redux": "^4.1.2",
+        "react-tracked": "^1.7.9",
+        "redux": "^4.2.0",
         "scheduler": "^0.20.2",
-        "use-subscription": "^1.5.1"
+        "use-subscription": "^1.8.0"
     },
     "devDependencies": {
         "@tsconfig/vite-react": "^1.0.0",
-        "@types/lodash.mapvalues": "^4.6.6",
-        "@types/react": "^17.0.39",
+        "@types/lodash.mapvalues": "^4.6.7",
+        "@types/react": "^17.0.47",
         "@types/use-subscription": "^1.0.0",
         "eslint": "^7.32.0",
         "scripts": "workspace:*",
         "tsconfig": "workspace:*",
-        "tsup": "^5.10.1",
-        "typescript": "^4.6.2"
+        "tsup": "^5.12.9",
+        "typescript": "^4.7.4"
     }
 }
