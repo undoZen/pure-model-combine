@@ -26,8 +26,13 @@ export const headerCombine = createCombine({
       changeHeaderText: (text: string) => {
         return models.header.actions.setHeaderText(text)
       },
-      addTodo: () => {
+      addTodo: (): undefined | { error: Error } => {
         const text = headerText(getState())
+        if (!text) {
+          return {
+            error: new Error('content can not be empty')
+          }
+        }
         models.todos.actions.addTodo(text)
         models.header.actions.setHeaderText('')
       }

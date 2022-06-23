@@ -23,7 +23,10 @@ export const AddTodo = HeaderContainer.toWrappedComponent(({ actions, selected }
         placeholder="What needs to be done?"
         onKeyPress={(event) => {
           if (event.key === 'Enter') {
-            addTodo()
+            const result = addTodo()
+            if (result) {
+              alert(result.error.message)
+            }
           }
         }}
         onChange={({ target }) => changeHeaderText(target.value)}

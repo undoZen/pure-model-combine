@@ -23,14 +23,16 @@ export function useModelsState<SS extends ModelRecord> (
     // console.log('subscription', models)
     modelsRef.current = models
     subsRef.current = {
-      getCurrentValue: () => getStateFromModels(models),
+      getCurrentValue: () => stateRef.current,
       subscribe: (callback: (states: States<SS>) => void) => {
         const subscriptions = Object.keys(models).map((key: keyof SS) => {
           return models[key].store.subscribe(() => {
-            // console.log('listener called', models, key, models[key].store.getState())
-            stateRef.current = {
-              ...stateRef.current,
-              [key]: models[key].store.getState()
+            const newState = models[key].store.getState()
+            if (stateRef.current?.[key] !== newState) {
+              stateRef.current = {
+                ...stateRef.current,
+                [key]: newState
+              }
             }
             callback(stateRef.current)
           })
