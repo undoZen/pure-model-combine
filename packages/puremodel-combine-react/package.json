@@ -14,14 +14,16 @@
     "files": [
         "dist"
     ],
+    "peerDependencies": {
+        "@types/react": "^17.0.47",
+        "react": "^16.8.0 || ^17 || ^18"
+    },
     "dependencies": {
         "@pure-model-combine/core": "workspace:*",
         "@pure-model/core": "^1.2.13",
-        "@types/lodash.mapkeys": "^4.6.7",
         "fast-equals": "^3.0.3",
         "lodash.mapkeys": "^4.6.0",
         "lodash.mapvalues": "^4.6.0",
-        "react": "^17.0.2",
         "react-tracked": "^1.7.9",
         "redux": "^4.2.0",
         "scheduler": "^0.20.2",
@@ -29,8 +31,8 @@
     },
     "devDependencies": {
         "@tsconfig/vite-react": "^1.0.0",
-        "@types/lodash.mapvalues": "^4.6.7",
-        "@types/react": "^17.0.47",
+        "@types/lodash.mapkeys": "^4.6.0",
+        "@types/lodash.mapvalues": "^4.6.0",
         "@types/use-subscription": "^1.0.0",
         "eslint": "^7.32.0",
         "scripts": "workspace:*",
