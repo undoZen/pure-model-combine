@@ -30,6 +30,7 @@ type CreateCombine = {
 export type CombineData<M extends IR, P extends object, S, A> = {
   models: M
   creator: (props: P, models: CreatorModels<M>, getState: GetState<M>) => {
+    effectsCleanUp?: () => void
     selectors: S
     actions: A
   }
@@ -129,22 +130,28 @@ export const adaptHeadless = (
 ) => {
   const getCachedDep = createCache(globalModels, preloadedStatesList, context)
   const createHeadlessContainer = <M extends IR, P extends object, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
+    let previousCleanUpFunction: (() => void) | undefined
     return {
       toCombine: (modelsInited: Partial<InitializerModels<M>> = {}, props: P = {} as P) => {
         const models = mapValues(combineData.models, (initializer, name) => {
+          const modelInited = modelsInited?.[name]
+          if (modelInited && isModel(modelInited)) {
+            return modelInited
+          }
           const cached = getCachedDep(initializer)
           if (cached) {
             return cached
-          }
-          const modelInited = modelsInited?.[name]
-          if (isModel(modelInited)) {
-            return modelInited as Model
           }
           return createPureModel(initializer, {
             context
           })
         }) as InitializerModels<M>
-        const { selectors, actions } = combineData.creator(props, models as unknown as CreatorModels<M>, (): InitializerModelState<M> => getStateFromModels(models))
+        if (typeof previousCleanUpFunction === 'function') {
+          previousCleanUpFunction()
+          previousCleanUpFunction = undefined
+        }
+        const { effectsCleanUp, selectors, actions } = combineData.creator(props, models as unknown as CreatorModels<M>, (): InitializerModelState<M> => getStateFromModels(models))
+        previousCleanUpFunction = effectsCleanUp
         const subscribe = (listener: (state: InitializerModelState<M>) => void) =>
           subscribeModels(models, listener)
         const getState = () => getStateFromModels(models)
