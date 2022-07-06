@@ -1,7 +1,7 @@
 import { Actions, adaptHeadless, CombineData, getStateFromModels, Initializer, InitializerModels, InitializerModelState, ModelRecord, Selectors, States } from '@pure-model-combine/core'
 import { ModelContextValue } from '@pure-model/core'
 import { shallowEqual } from 'fast-equals'
-import { ComponentType, createContext, FunctionComponent, PropsWithChildren, useContext, useMemo, useRef } from 'react'
+import { ComponentType, createContext, FunctionComponent, PropsWithChildren, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { createTrackedSelector } from 'react-tracked'
 import { useSubscription } from 'use-subscription'
 export * from 'redux'
@@ -25,9 +25,15 @@ export function useModelsState<SS extends ModelRecord> (
     subsRef.current = {
       getCurrentValue: () => stateRef.current,
       subscribe: (callback: (states: States<SS>) => void) => {
+        const currentState = getStateFromModels(models)
+        if (!shallowEqual(currentState, stateRef.current)) {
+          stateRef.current = currentState
+          // console.log('state changed', currentState)
+        }
         const subscriptions = Object.keys(models).map((key: keyof SS) => {
           return models[key].store.subscribe(() => {
             const newState = models[key].store.getState()
+            // console.log('model', key, 'updated: ', newState, stateRef.current?.[key], stateRef.current?.[key] !== newState)
             if (stateRef.current?.[key] !== newState) {
               stateRef.current = {
                 ...stateRef.current,
@@ -58,6 +64,10 @@ const useMemoShallowEqual = (fn: () => any, compare: any) => {
   return fnResultRef.current as ReturnType<typeof fn>
 }
 
+type ModelSubscriberProps<M extends IR> = {
+  models: InitializerModels<M>
+  updateState: (s: InitializerModelState<M>) => void
+}
 type ModelProviderProps<M extends IR, S extends Selectors<M>, A extends Actions> = {
   models: InitializerModels<M>
   selectors: S
@@ -112,13 +122,10 @@ export const adaptReact = (
   const createReactContainer = <M extends IR, P extends object, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
     const { toCombine } = createHeadlessContainer(combineData)
     const ModelsContext = createContext<ModelContextProviderProps<M, S, A> | null>(null)
-    function ModelsStatesProvider ({ children, models, selectors, actions }: PropsWithChildren<ModelProviderProps<M, S, A>>) {
+    function SubscribeModelsState ({ models, updateState }: ModelSubscriberProps<M>) {
       const state = useModelsState(models)
-      return (
-        <ModelsContext.Provider value={{ models, state, selectors, actions }}>
-          {children}
-        </ModelsContext.Provider>
-      )
+      useEffect(() => { updateState(state) }, [state])
+      return null
     }
 
     const Provider:ProviderType<M, P> = ({ children, models: modelsInited, ...props }: PropsWithChildren<ProviderProps<M> & P>) => {
@@ -137,9 +144,16 @@ export const adaptReact = (
         return toCombine(models, props as P)
       }, [rmm, rmp])
       // selectors actions 可以随 props 变化，models 一般只需初始化一次，所以分开调用两次 toCombine()
-      return <ModelsStatesProvider models={models} selectors={selectors} actions={actions} >
-        {children}
-      </ModelsStatesProvider>
+      const [state, _updateState] = useState<InitializerModelState<M>>(() => getStateFromModels(models))
+      const updateState = (s: InitializerModelState<M>) => {
+        _updateState(s)
+      }
+      return (
+        <ModelsContext.Provider value={{ models, state, selectors, actions }}>
+          <SubscribeModelsState models={models} updateState={updateState} />
+          {children}
+        </ModelsContext.Provider>
+      )
     }
 
     const useContextModelsState = (selector: (state: InitializerModelState<M>) => any) => {
