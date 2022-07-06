@@ -130,7 +130,6 @@ export const adaptHeadless = (
 ) => {
   const getCachedDep = createCache(globalModels, preloadedStatesList, context)
   const createHeadlessContainer = <M extends IR, P extends object, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
-    let previousCleanUpFunction: (() => void) | undefined
     return {
       toCombine: (modelsInited: Partial<InitializerModels<M>> = {}, props: P = {} as P) => {
         const models = mapValues(combineData.models, (initializer, name) => {
@@ -146,16 +145,12 @@ export const adaptHeadless = (
             context
           })
         }) as InitializerModels<M>
-        if (typeof previousCleanUpFunction === 'function') {
-          previousCleanUpFunction()
-          previousCleanUpFunction = undefined
-        }
         const { effectsCleanUp, selectors, actions } = combineData.creator(props, models as unknown as CreatorModels<M>, (): InitializerModelState<M> => getStateFromModels(models))
-        previousCleanUpFunction = effectsCleanUp
         const subscribe = (listener: (state: InitializerModelState<M>) => void) =>
           subscribeModels(models, listener)
         const getState = () => getStateFromModels(models)
         return {
+          effectsCleanUp,
           subscribe,
           getState,
           models,

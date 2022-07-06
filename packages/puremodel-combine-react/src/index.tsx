@@ -128,22 +128,26 @@ export const adaptReact = (
       return null
     }
 
-    const Provider:ProviderType<M, P> = ({ children, models: modelsInited, ...props }: PropsWithChildren<ProviderProps<M> & P>) => {
+    const Provider:ProviderType<M, P> = ({ children, models: modelsInited = {}, ...props }: PropsWithChildren<ProviderProps<M> & P>) => {
+      const rmp: number = useMemoShallowEqual(() => Math.random(), props)
       const rmm: number = useMemoShallowEqual(() => Math.random(), modelsInited)
       const modelsRef = useRef(modelsInited)
-      const { models } = useMemo(() => {
-        const { models } = toCombine(modelsInited ?? {}, props as P)
-        modelsRef.current = {
-          ...modelsRef.current,
-          ...models
-        }
-        return { models }
-      }, [rmm])
-      const rmp: number = useMemoShallowEqual(() => Math.random(), props)
-      const { selectors, actions } = useMemo(() => {
-        return toCombine(models, props as P)
+      modelsRef.current = {
+        ...modelsRef.current,
+        ...modelsInited
+      }
+      const cleanUpRef = useRef(() => {})
+      const { effectsCleanUp, models, selectors, actions } = useMemo(() => {
+        const combine = toCombine(modelsRef.current, props as P)
+        modelsRef.current = combine.models
+        return combine
       }, [rmm, rmp])
-      // selectors actions 可以随 props 变化，models 一般只需初始化一次，所以分开调用两次 toCombine()
+      cleanUpRef.current = () => {
+        if (typeof effectsCleanUp === 'function') {
+          effectsCleanUp()
+        }
+      }
+      useEffect(() => () => (true && cleanUpRef.current)(), [rmm, rmp])
       const [state, _updateState] = useState<InitializerModelState<M>>(() => getStateFromModels(models))
       const updateState = (s: InitializerModelState<M>) => {
         _updateState(s)
