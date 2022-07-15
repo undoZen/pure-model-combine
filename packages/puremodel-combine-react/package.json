@@ -15,8 +15,9 @@
         "dist"
     ],
     "peerDependencies": {
-        "@types/react": "^17.0.47",
-        "react": "^16.8.0 || ^17 || ^18"
+        "@types/react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+        "@types/react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0",
+        "react": "^16.8.0 || ^17.0.0 || ^18.0.0"
     },
     "dependencies": {
         "@pure-model-combine/core": "workspace:*",
@@ -33,6 +34,8 @@
         "@tsconfig/vite-react": "^1.0.0",
         "@types/lodash.mapkeys": "^4.6.0",
         "@types/lodash.mapvalues": "^4.6.0",
+        "@types/react": "^18.0.0",
+        "@types/react-dom": "^18.0.0",
         "@types/use-subscription": "^1.0.0",
         "eslint": "^7.32.0",
         "scripts": "workspace:*",

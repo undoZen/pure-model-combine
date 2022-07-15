@@ -93,17 +93,21 @@ type ComponentProps<M extends IR, S extends Selectors<M>, A extends Actions> = {
   selected: SelectorsReturnType<M, S>
   actions: A
 }
-type ComponentHOC<M extends IR, P, S extends Selectors<M>, A extends Actions> = {
+type WrappedComponentHOC<M extends IR, P, S extends Selectors<M>, A extends Actions> = {
   (component: ComponentType<ComponentProps<M, S, A> & P>):
-    FunctionComponent<ProviderProps<M> & P>
-}
+    FunctionComponent<ProviderProps<M> & P>;
+};
+type ComponentHOC<M extends IR, S extends Selectors<M>, A extends Actions> = {
+  <P>(component: ComponentType<ComponentProps<M, S, A> & P>):
+    FunctionComponent<Omit<P, keyof ComponentProps<M, S, A>>>
+};
 type ProviderType<M extends IR, P> =
   FunctionComponent<ProviderProps<M> & P>
 type ContainerType<M extends IR, P, S extends Selectors<M>, A extends Actions> =
   Helplers<M, S, A>
   & {
-    toWrappedComponent: ComponentHOC<M, P, S, A>
-    toComponent: ComponentHOC<M, P, S, A>
+    toWrappedComponent: WrappedComponentHOC<M, P, S, A>
+    toComponent: ComponentHOC<M, S, A>
   }
   & { Provider: ProviderType<M, P>}
 type Selector<M extends IR, Selected extends any = InitializerModelState<M>> = (state: InitializerModelState<M>) => Selected
@@ -194,8 +198,8 @@ export const adaptReact = (
       return ctx.actions
     }
 
-    const toComponent: ComponentHOC<M, P, S, A> = (Component) => {
-      const ComponentWithHelpers = (props: PropsWithChildren<P>) => {
+    const toComponent: ComponentHOC<M, S, A> = (Component) => {
+      const ComponentWithHelpers = (props: any) => {
         const actions = useActions()
         const selected = useSelected()
         return <Component
@@ -209,7 +213,7 @@ export const adaptReact = (
       return ComponentWithHelpers
     }
 
-    const toWrappedComponent: ComponentHOC<M, P, S, A> = (Component) => {
+    const toWrappedComponent: WrappedComponentHOC<M, P, S, A> = (Component) => {
       const ComponentWithHelpers = toComponent(Component)
       const ComponentWrappedWithProvider = (props: PropsWithChildren<ProviderProps<M> & P>) => {
         const { children, ...rest } = props
