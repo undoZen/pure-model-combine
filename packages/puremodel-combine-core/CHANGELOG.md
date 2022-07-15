@@ -1,5 +1,11 @@
 # @pure-model-combine/core
 
+## 1.2.1
+
+### Patch Changes
+
+- fix ComponentHOC type
+
 ## 1.2.0
 
 ### Minor Changes

@@ -1,5 +1,13 @@
 # @pure-model-combine/react
 
+## 1.2.1
+
+### Patch Changes
+
+- fix ComponentHOC type
+- Updated dependencies
+  - @pure-model-combine/core@1.2.1
+
 ## 1.2.0
 
 ### Minor Changes

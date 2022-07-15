@@ -1,5 +1,12 @@
 # headless
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @pure-model-combine/core@1.2.1
+
 ## 0.0.2
 
 ### Patch Changes
