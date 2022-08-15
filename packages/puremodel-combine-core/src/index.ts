@@ -15,7 +15,7 @@ export type InitializerModels<SS extends IR> = {
   [K in keyof SS]: InitializerModel<SS[K]>
 }
 export type InitializerModelState<SS extends IR> = States<InitializerModels<SS>>
-export type Selectors<M extends IR> = Record<string, (state: InitializerModelState<M>) => any>
+export type Selectors<M extends IR> = Record<string, (state: InitializerModelState<M>, ...args: any[]) => any>
 type AnyFn = (...args: any[]) => any
 export type Actions = Record<string, AnyFn>
 export type Initializer<S = any> = (...args: any) => {
@@ -23,13 +23,15 @@ export type Initializer<S = any> = (...args: any) => {
   actions: Actions;
 }
 type IR = Record<string, Initializer>
+type ModelStatesListener<M extends IR> = (state: InitializerModelState<M>) => void
+type SubscribeCallback<M extends IR> = (listener: ModelStatesListener<M>) => () => void
 type CreateCombine = {
-  <M extends IR>(modelInitializers: M): CombineData<M, {}, {}, {}>
-  <M extends IR, S extends Selectors<M>, A extends Actions, P extends object = {}>(modelInitializers: M, creator: Creator<M, S, A, P>): CombineData<M, P, S, A>
+  <M extends IR>(modelInitializers: M): CombineData<M, {}, {}>
+  <M extends IR, S extends Selectors<M>, A extends Actions>(modelInitializers: M, creator: Creator<M, S, A>): CombineData<M, S, A>
 }
-export type CombineData<M extends IR, P extends object, S, A> = {
+export type CombineData<M extends IR, S, A> = {
   models: M
-  creator: (props: P, models: CreatorModels<M>, getState: GetState<M>) => {
+  creator: (models: CreatorModels<M>, getState: GetState<M>, subscribe: SubscribeCallback<M>) => {
     effectsCleanUp?: () => void
     selectors: S
     actions: A
@@ -38,8 +40,8 @@ export type CombineData<M extends IR, P extends object, S, A> = {
 
 type GetState<M extends IR> = () => InitializerModelState<M>
 
-export type Creator<M extends IR, S extends Selectors<M> = Selectors<M>, A extends Actions = Actions, P = any> =
-  (props: P, models: CreatorModels<M>, getState: GetState<M>) => Created<S, A>
+export type Creator<M extends IR, S extends Selectors<M> = Selectors<M>, A extends Actions = Actions> =
+  (models: CreatorModels<M>, getState: GetState<M>, subscribe: SubscribeCallback<M>) => Created<S, A>
 
 type Created<S, A> = {
   selectors: S
@@ -63,7 +65,7 @@ export const createCombine: CreateCombine = <M extends IR>(
   creator?: Creator<M>
 ) => {
   if (!creator) {
-    creator = (props: any, models: CreatorModels<M>, getState: GetState<M>) => ({
+    creator = (models: CreatorModels<M>) => ({
       selectors: {},
       actions: {}
     })
@@ -78,27 +80,6 @@ export const createCombine: CreateCombine = <M extends IR>(
   }
 }
 
-function createCache (globalModels: Initializer[] = [], preloadedStatesList: any[] = [], context?: ModelContextValue) {
-  const deps = new Map<Initializer, Model>()
-  return function getCachedDep<I extends Initializer<any>> (initializer: I) {
-    if (!globalModels.includes(initializer)) {
-      return
-    }
-    if (!deps.has(initializer)) {
-      const index = globalModels.indexOf(initializer)
-      const preloadedState = preloadedStatesList[index]
-      // console.log('cpm', name, initializer, preloadedState)
-      const dep = createPureModel(initializer, {
-        context,
-        preloadedState
-      }) as InitializerModel<I>
-      deps.set(initializer, dep)
-      return dep
-    }
-    // console.log('dep cache hit', initializer, dep)
-    return deps.get(initializer) as InitializerModel<I>
-  }
-}
 function isModel<M = any> (model: any): model is M extends Model<any> ? M : never {
   return model && !!model.store && !!model.actions
 }
@@ -123,45 +104,30 @@ export function subscribeModels<SS extends ModelRecord> (models: SS, listener: (
     subscriptions.forEach(unsubscribe => unsubscribe())
   }
 }
-export const adaptHeadless = (
-  globalModels: Initializer[] = [],
-  preloadedStatesList: any[] = [],
-  context?: ModelContextValue
-) => {
-  const getCachedDep = createCache(globalModels, preloadedStatesList, context)
-  const createHeadlessContainer = <M extends IR, P extends object, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, P, S, A>) => {
-    return {
-      toCombine: (modelsInited: Partial<InitializerModels<M>> = {}, props: P = {} as P) => {
-        const models = mapValues(combineData.models, (initializer, name) => {
-          const modelInited = modelsInited?.[name]
-          if (modelInited && isModel(modelInited)) {
-            return modelInited
-          }
-          const cached = getCachedDep(initializer)
-          if (cached) {
-            return cached
-          }
-          return createPureModel(initializer, {
-            context
-          })
-        }) as InitializerModels<M>
-        const { effectsCleanUp, selectors, actions } = combineData.creator(props, models as unknown as CreatorModels<M>, (): InitializerModelState<M> => getStateFromModels(models))
-        const subscribe = (listener: (state: InitializerModelState<M>) => void) =>
-          subscribeModels(models, listener)
-        const getState = () => getStateFromModels(models)
-        return {
-          effectsCleanUp,
-          subscribe,
-          getState,
-          models,
-          selectors,
-          actions
+export const createHeadlessContainer = <M extends IR, S extends Selectors<M>, A extends Actions>(combineData: CombineData<M, S, A>, context?: ModelContextValue) => {
+  return {
+    toCombine: (modelsInited: Partial<InitializerModels<M>> = {}) => {
+      const models = mapValues(combineData.models, (initializer, name) => {
+        const modelInited = modelsInited?.[name]
+        if (modelInited && isModel(modelInited)) {
+          return modelInited
         }
+        return createPureModel(initializer, {
+          context
+        })
+      }) as InitializerModels<M>
+      const getState = (): InitializerModelState<M> => getStateFromModels(models)
+      const subscribe = (listener: ModelStatesListener<M>) =>
+        subscribeModels(models, listener)
+      const { effectsCleanUp, selectors, actions } = combineData.creator(models as unknown as CreatorModels<M>, getState, subscribe)
+      return {
+        effectsCleanUp,
+        subscribe,
+        getState,
+        models,
+        selectors,
+        actions
       }
     }
-  }
-  return {
-    getCachedDep,
-    createHeadlessContainer
   }
 }

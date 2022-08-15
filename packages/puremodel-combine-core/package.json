@@ -7,8 +7,8 @@
     "types": "dist/index.d.ts",
     "sideEffects": false,
     "scripts": {
-        "build": "tsup src/index.ts --format esm,cjs --dts --external react --inject node_modules/scripts/react-shim.js",
-        "dev": "tsup src/index.ts --format esm,cjs --watch --dts --external react --inject node_modules/scripts/react-shim.js",
+        "build": "tsup src/index.ts --format esm,cjs --dts",
+        "dev": "tsup src/index.ts --format esm,cjs --watch",
         "lint": "TIMING=1 eslint --ext .js,.jsx,.ts,.tsx src --ignore-path ../../.gitignore . --fix && tsc --noEmit",
         "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
     },
