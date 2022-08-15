@@ -129,6 +129,7 @@ importers:
       fast-equals: ^3.0.3
       lodash.mapkeys: ^4.6.0
       lodash.mapvalues: ^4.6.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
       react-tracked: ^1.7.9
       redux: ^4.2.0
       scheduler: ^0.20.2
@@ -143,6 +144,7 @@ importers:
       fast-equals: 3.0.3
       lodash.mapkeys: 4.6.0
       lodash.mapvalues: 4.6.0
+      react: 18.2.0
       react-tracked: 1.7.9_wid5evxxk5c5gm5pqrkvgg4cb4
       redux: 4.2.0
       scheduler: 0.20.2

@@ -1,13 +1,13 @@
 {
     "name": "@pure-model-combine/react",
-    "version": "1.2.1",
+    "version": "2.0.0",
     "main": "dist/index.cjs.js",
     "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "sideEffects": false,
     "scripts": {
-        "build": "tsup src/index.tsx --format esm,cjs --dts --external react --inject node_modules/scripts/react-shim.js",
-        "dev": "tsup src/index.tsx --format esm,cjs --watch --dts --external react --inject node_modules/scripts/react-shim.js",
+        "build": "tsup src/index.tsx --format esm,cjs --dts",
+        "dev": "tsup src/index.tsx --format esm,cjs --watch --dts",
         "lint": "TIMING=1 eslint --ext .js,.jsx,.ts,.tsx src --ignore-path ../../.gitignore . --fix && tsc --noEmit",
         "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
     },
@@ -16,7 +16,6 @@
     ],
     "peerDependencies": {
         "@types/react": "^16.8.0 || ^17.0.0 || ^18.0.0",
-        "@types/react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0",
         "react": "^16.8.0 || ^17.0.0 || ^18.0.0"
     },
     "dependencies": {
@@ -27,7 +26,6 @@
         "lodash.mapvalues": "^4.6.0",
         "react-tracked": "^1.7.9",
         "redux": "^4.2.0",
-        "scheduler": "^0.20.2",
         "use-subscription": "^1.8.0"
     },
     "devDependencies": {
